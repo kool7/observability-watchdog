@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     webhook_url: str = "http://localhost:8000/webhook/receive"
     app_env: str = "development"
     version: str = "0.1.0"
+    claude_model: str = "claude-sonnet-4-6"
+    claude_max_tokens: int = 256
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

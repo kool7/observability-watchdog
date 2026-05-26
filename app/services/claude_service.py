@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING
 from anthropic import AsyncAnthropic
 from anthropic.types import TextBlock
 
+from app.config import settings
+
 if TYPE_CHECKING:
     from app.services.anomaly_detector import AnomalyResult
 
 logger = logging.getLogger(__name__)
 
-_MODEL = "claude-sonnet-4-6"
-_MAX_TOKENS = 256
 _client: AsyncAnthropic | None = None
 
 
@@ -41,8 +41,8 @@ async def generate_anomaly_narrative(result: AnomalyResult) -> str:
     """Call Claude to generate a 2-3 sentence incident narrative for an anomaly."""
     try:
         message = await _get_client().messages.create(
-            model=_MODEL,
-            max_tokens=_MAX_TOKENS,
+            model=settings.claude_model,
+            max_tokens=settings.claude_max_tokens,
             messages=[{"role": "user", "content": _build_prompt(result)}],
         )
         block = message.content[0]
