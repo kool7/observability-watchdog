@@ -16,7 +16,7 @@
 
 ## Phase 3: Anomaly Detection
 - [x] Task 5 (M): Anomaly detector service — Z-score statistical detection
-- [ ] Task 6 (M): Claude service — AI incident narrative on anomaly
+- [x] Task 6 (M): Claude service — AI incident narrative on anomaly
 
 ## Checkpoint 3: POST errors → anomaly detected → Claude narrative generated
 

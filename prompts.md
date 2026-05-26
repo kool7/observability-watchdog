@@ -124,6 +124,14 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
+## Turn 21 — Session Resume / Task 6 Start
+
+**Timestamp:** 2026-05-27
+
+[Session resumed after context compaction. No new architect prompt — continuing Task 6: Claude service — AI incident narrative on anomaly detection. Implementing generate_anomaly_narrative via claude-sonnet-4-6, wiring into run_anomaly_check, persisting to Anomaly.ai_narrative.]
+
+---
+
 ## Turn 15 — Merge PR #2, Proceed, Plugin Compliance
 
 **Timestamp:** 2026-05-26
@@ -144,6 +152,15 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 **Timestamp:** 2026-05-26
 
 "CI is still failing E   ModuleNotFoundError: No module named 'psycopg2' how come this is left we have step defined to install deps needed."
+
+---
+
+## Turn 20 — Plugin Skills Gap + prompts.md Reminder
+**Timestamp:** 2026-05-27
+
+"Merged, These are not the only skills the plugin has few more good one, I hope you are following my instruction do always review what skills can be utilized and decide ahead. Please use this too /code-simplify after significant work has been done. still I can see you missed to update prompt.md which is bad. loopin verify skills as well and I have plywright mcp would suggest to use it the moment frontend changes are added so we can test it efficiently and avoid any bugs to get past us."
+
+[Updated memory with full plugin map: BUILD (incremental-implementation, test-driven-development, context-engineering, source-driven-development, doubt-driven-development, frontend-ui-engineering, api-and-interface-design), VERIFY (debugging-and-error-recovery, browser-testing-with-devtools, Playwright MCP for frontend), REVIEW (code-review-and-quality, /code-simplify after significant work, security-and-hardening, performance-optimization). Added mandatory rule: prompts.md and tasks/todo.md must be updated at every task boundary.]
 
 ---
 
