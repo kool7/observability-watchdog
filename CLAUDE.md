@@ -29,3 +29,16 @@ python scripts/generate_logs.py
 - No merge to main without PR approval (branch protection)
 - Never commit .env
 - Async all the way down — no sync DB calls
+
+## Workflow (must follow every task, no exceptions)
+- tasks/todo.md updated at START and END of every task
+- Run code-reviewer agent before every PR — never skip
+- Run /code-simplify after every PR code review pass
+- Resolve GitHub PR review threads via `gh api graphql` resolveReviewThread mutation
+- PR prefix: OW (always — derived from project name Observability Watchdog)
+- Never add "Co-Authored-By: Claude" line in commit messages
+- Push to GitHub only after explicit user approval
+
+## Context Window
+- Warn user proactively when context approaches ~80% capacity
+- List all standing in-flight instructions before /compact runs so nothing is lost
