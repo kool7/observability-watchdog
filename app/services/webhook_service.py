@@ -10,6 +10,7 @@ import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
+from app.middleware.error_handler import WebhookDeliveryError
 from app.models.webhook_event import WebhookEvent
 
 if TYPE_CHECKING:
@@ -41,12 +42,13 @@ async def fire(anomaly: Anomaly, db: AsyncSession) -> None:
                 settings.webhook_url, json=payload, timeout=5.0
             )
             status_code = response.status_code
-    except Exception:
-        logger.exception(
-            "Webhook delivery failed for anomaly %s service %s",
-            anomaly.id,
-            anomaly.service_name,
+    except httpx.RequestError as exc:
+        # Network-level failure (connect error, timeout, DNS) — fire-and-forget:
+        # record the attempt with status 0 but do not fail the ingest pipeline.
+        err = WebhookDeliveryError(
+            f"Webhook delivery failed for anomaly {anomaly.id}: {exc}"
         )
+        logger.error("%s", err.detail)
 
     event = WebhookEvent(
         anomaly_id=anomaly.id,

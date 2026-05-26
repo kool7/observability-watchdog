@@ -1,23 +1,11 @@
 """Tests for the webhook router — POST /webhook/receive and GET /webhook/events."""
 
-import uuid
-from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 from httpx import ASGITransport, AsyncClient
 
 from app.main import app
-
-
-def _fake_event():
-    ev = MagicMock()
-    ev.id = uuid.uuid4()
-    ev.anomaly_id = uuid.uuid4()
-    ev.fired_at = datetime.now(timezone.utc)
-    ev.payload = {"service_name": "auth-service", "severity": "HIGH"}
-    ev.response_status = 200
-    return ev
-
+from tests.__fixtures__.webhook_events import make_webhook_event
 
 # ---------------------------------------------------------------------------
 # POST /webhook/receive
@@ -79,7 +67,7 @@ class TestWebhookEvents:
         with patch(
             "app.routers.webhooks.list_webhook_events", new_callable=AsyncMock
         ) as mock_list:
-            mock_list.return_value = [_fake_event()]
+            mock_list.return_value = [make_webhook_event()]
 
             async with AsyncClient(
                 transport=ASGITransport(app=app), base_url="http://test"
@@ -107,11 +95,10 @@ class TestWebhookEvents:
         assert resp.json() == []
 
     async def test_event_has_required_fields(self):
-        event = _fake_event()
         with patch(
             "app.routers.webhooks.list_webhook_events", new_callable=AsyncMock
         ) as mock_list:
-            mock_list.return_value = [event]
+            mock_list.return_value = [make_webhook_event()]
 
             async with AsyncClient(
                 transport=ASGITransport(app=app), base_url="http://test"

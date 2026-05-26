@@ -47,6 +47,12 @@ class ServiceUnavailableError(WatchdogError):
     title = "Service Unavailable"
 
 
+class WebhookDeliveryError(ServiceUnavailableError):
+    """Raised when the outbound webhook POST fails at the network level."""
+
+    title = "Webhook Delivery Failed"
+
+
 # ---------------------------------------------------------------------------
 # Problem Details builder (RFC 7807)
 # ---------------------------------------------------------------------------

@@ -1,31 +1,13 @@
 """Tests for the webhook firing service. All HTTP calls are mocked."""
 
-import uuid
-from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.models.anomaly import Anomaly, Severity
+import httpx
+
+from tests.__fixtures__.anomalies import make_anomaly
 
 
-def _make_anomaly(**kwargs) -> Anomaly:
-    defaults = dict(
-        id=uuid.uuid4(),
-        service_name="auth-service",
-        detected_at=datetime.now(timezone.utc),
-        window_start=datetime.now(timezone.utc),
-        window_end=datetime.now(timezone.utc),
-        error_count=30,
-        z_score=4.5,
-        threshold_breached=2.0,
-        severity=Severity.HIGH,
-        ai_narrative="auth-service spike detected.",
-        webhook_fired=False,
-    )
-    defaults.update(kwargs)
-    return Anomaly(**defaults)
-
-
-def _make_db(commit=True):
+def _make_db():
     db = AsyncMock()
     db.commit = AsyncMock()
     db.refresh = AsyncMock()
@@ -43,7 +25,7 @@ class TestFireWebhook:
     async def test_creates_webhook_event_record(self):
         from app.services.webhook_service import fire
 
-        anomaly = _make_anomaly()
+        anomaly = make_anomaly()
         db = _make_db()
 
         mock_response = MagicMock()
@@ -69,7 +51,7 @@ class TestFireWebhook:
     async def test_sets_webhook_fired_true(self):
         from app.services.webhook_service import fire
 
-        anomaly = _make_anomaly()
+        anomaly = make_anomaly()
         db = _make_db()
 
         mock_response = MagicMock()
@@ -89,7 +71,7 @@ class TestFireWebhook:
     async def test_payload_contains_anomaly_fields(self):
         from app.services.webhook_service import fire
 
-        anomaly = _make_anomaly(service_name="payment-service", error_count=50)
+        anomaly = make_anomaly(service_name="payment-service", error_count=50)
         db = _make_db()
 
         mock_response = MagicMock()
@@ -117,7 +99,7 @@ class TestFireWebhook:
     async def test_records_response_status_code(self):
         from app.services.webhook_service import fire
 
-        anomaly = _make_anomaly()
+        anomaly = make_anomaly()
         db = _make_db()
 
         mock_response = MagicMock()
@@ -138,7 +120,7 @@ class TestFireWebhook:
     async def test_commits_after_save(self):
         from app.services.webhook_service import fire
 
-        anomaly = _make_anomaly()
+        anomaly = make_anomaly()
         db = _make_db()
 
         mock_response = MagicMock()
@@ -165,14 +147,16 @@ class TestFireWebhookErrors:
     async def test_does_not_raise_on_http_error(self):
         from app.services.webhook_service import fire
 
-        anomaly = _make_anomaly()
+        anomaly = make_anomaly()
         db = _make_db()
 
         with patch("app.services.webhook_service.httpx.AsyncClient") as mock_cls:
             mock_client = AsyncMock()
             mock_client.__aenter__ = AsyncMock(return_value=mock_client)
             mock_client.__aexit__ = AsyncMock(return_value=False)
-            mock_client.post = AsyncMock(side_effect=Exception("connection refused"))
+            mock_client.post = AsyncMock(
+                side_effect=httpx.ConnectError("connection refused")
+            )
             mock_cls.return_value = mock_client
 
             # must not raise
@@ -181,14 +165,14 @@ class TestFireWebhookErrors:
     async def test_records_status_0_on_http_error(self):
         from app.services.webhook_service import fire
 
-        anomaly = _make_anomaly()
+        anomaly = make_anomaly()
         db = _make_db()
 
         with patch("app.services.webhook_service.httpx.AsyncClient") as mock_cls:
             mock_client = AsyncMock()
             mock_client.__aenter__ = AsyncMock(return_value=mock_client)
             mock_client.__aexit__ = AsyncMock(return_value=False)
-            mock_client.post = AsyncMock(side_effect=Exception("timeout"))
+            mock_client.post = AsyncMock(side_effect=httpx.TimeoutException("timeout"))
             mock_cls.return_value = mock_client
 
             await fire(anomaly, db)
@@ -199,7 +183,7 @@ class TestFireWebhookErrors:
     async def test_webhook_fired_not_set_on_5xx(self):
         from app.services.webhook_service import fire
 
-        anomaly = _make_anomaly()
+        anomaly = make_anomaly()
         db = _make_db()
 
         mock_response = MagicMock()
@@ -219,14 +203,16 @@ class TestFireWebhookErrors:
     async def test_webhook_fired_not_set_on_http_failure(self):
         from app.services.webhook_service import fire
 
-        anomaly = _make_anomaly()
+        anomaly = make_anomaly()
         db = _make_db()
 
         with patch("app.services.webhook_service.httpx.AsyncClient") as mock_cls:
             mock_client = AsyncMock()
             mock_client.__aenter__ = AsyncMock(return_value=mock_client)
             mock_client.__aexit__ = AsyncMock(return_value=False)
-            mock_client.post = AsyncMock(side_effect=Exception("connection refused"))
+            mock_client.post = AsyncMock(
+                side_effect=httpx.ConnectError("connection refused")
+            )
             mock_cls.return_value = mock_client
 
             await fire(anomaly, db)
