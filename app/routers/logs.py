@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from uuid import UUID
 
@@ -16,6 +17,7 @@ from app.services.log_service import (
     list_log_entries,
 )
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/logs", tags=["logs"])
 
 
@@ -32,13 +34,18 @@ async def ingest_logs(
 ):
     if isinstance(payload, list):
         result = await create_log_entries_bulk(db, payload)
-        # trigger detection for each distinct service in the batch
         for svc in {item.service_name for item in payload}:
-            await run_anomaly_check(db, svc)
+            try:
+                await run_anomaly_check(db, svc)
+            except Exception:
+                logger.exception("anomaly check failed for service %s", svc)
         return result
 
     entry = await create_log_entry(db, payload)
-    await run_anomaly_check(db, payload.service_name)
+    try:
+        await run_anomaly_check(db, payload.service_name)
+    except Exception:
+        logger.exception("anomaly check failed for service %s", payload.service_name)
     return entry
 
 

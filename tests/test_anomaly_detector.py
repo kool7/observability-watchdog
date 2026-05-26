@@ -35,6 +35,13 @@ def _varied_baseline() -> list[datetime]:
     return result
 
 
+def _spike_with_z(target_z: float, baseline_mean: float = 4.0) -> list[datetime]:
+    """Return spike timestamps producing approximately target_z."""
+    stdev = 1.3  # approximate stdev of _varied_baseline counts
+    count = int(baseline_mean + target_z * stdev) + 1
+    return _spike_in_current_window(count)
+
+
 # ---------------------------------------------------------------------------
 # ZScoreDetector — baseline behaviour
 # ---------------------------------------------------------------------------
@@ -76,9 +83,7 @@ class TestZScoreDetector:
     def test_anomaly_detected_on_spike(self):
         """A spike in the current window above Z=2.0 should return AnomalyResult."""
         detector = ZScoreDetector(window_minutes=5, z_threshold=2.0)
-        # baseline: 1 error per window for the past 11 windows
-        baseline = [_ts(-(i * 5) - 1) for i in range(1, 12)]
-        # spike: 30 errors all within the current 5-minute window
+        baseline = _varied_baseline()
         spike = _spike_in_current_window(30)
         result = detector.analyze(
             service_name="svc",
@@ -93,16 +98,40 @@ class TestZScoreDetector:
     def test_anomaly_result_severity_low(self):
         """Z between 2.0 and 3.0 → LOW severity."""
         detector = ZScoreDetector(window_minutes=5, z_threshold=2.0)
-        baseline = [_ts(-(i * 5) - 1) for i in range(1, 12)]
+        baseline = _varied_baseline()
+        # Aim for z just above 2.0: spike = mean + 2.5*stdev ≈ 4 + 2.5*1.3 ≈ 8
         spike = _spike_in_current_window(8)
         result = detector.analyze("svc", baseline + spike, _NOW)
-        if result is not None and result.z_score < 3.0:
-            assert result.severity == Severity.LOW
+        assert result is not None
+        assert result.severity == Severity.LOW
+        assert 2.0 < result.z_score < 3.0
+
+    def test_anomaly_result_severity_medium(self):
+        """Z between 3.0 and 4.0 → MEDIUM severity."""
+        detector = ZScoreDetector(window_minutes=5, z_threshold=2.0)
+        baseline = _varied_baseline()
+        # Aim for z ≈ 3.5: spike = mean + 3.5*stdev ≈ 4 + 4.5 ≈ 9
+        spike = _spike_in_current_window(9)
+        result = detector.analyze("svc", baseline + spike, _NOW)
+        assert result is not None
+        assert result.severity == Severity.MEDIUM
+        assert 3.0 <= result.z_score < 4.0
+
+    def test_anomaly_result_severity_high(self):
+        """Z between 4.0 and 5.0 → HIGH severity."""
+        detector = ZScoreDetector(window_minutes=5, z_threshold=2.0)
+        baseline = _varied_baseline()
+        # Aim for z ≈ 4.5: spike = mean + 4.5*stdev ≈ 4 + 6 ≈ 10
+        spike = _spike_in_current_window(11)
+        result = detector.analyze("svc", baseline + spike, _NOW)
+        assert result is not None
+        assert result.severity == Severity.HIGH
+        assert 4.0 <= result.z_score < 5.0
 
     def test_anomaly_result_has_window_bounds(self):
         """AnomalyResult must carry window_start and window_end."""
         detector = ZScoreDetector(window_minutes=5, z_threshold=2.0)
-        baseline = [_ts(-(i * 5) - 1) for i in range(1, 12)]
+        baseline = _varied_baseline()
         spike = _spike_in_current_window(30)
         result = detector.analyze("svc", baseline + spike, _NOW)
         assert result is not None
@@ -112,7 +141,7 @@ class TestZScoreDetector:
     def test_anomaly_result_threshold_field(self):
         """AnomalyResult must record the configured threshold."""
         detector = ZScoreDetector(window_minutes=5, z_threshold=2.0)
-        baseline = [_ts(-(i * 5) - 1) for i in range(1, 12)]
+        baseline = _varied_baseline()
         spike = _spike_in_current_window(30)
         result = detector.analyze("svc", baseline + spike, _NOW)
         assert result is not None
@@ -129,7 +158,7 @@ class TestZScoreDetector:
     def test_severity_critical_on_extreme_spike(self):
         """Z > 5.0 should map to CRITICAL severity."""
         detector = ZScoreDetector(window_minutes=5, z_threshold=2.0)
-        baseline = [_ts(-(i * 5) - 1) for i in range(1, 12)]
+        baseline = _varied_baseline()
         spike = _spike_in_current_window(100)
         result = detector.analyze("svc", baseline + spike, _NOW)
         assert result is not None
@@ -138,7 +167,37 @@ class TestZScoreDetector:
     def test_errors_outside_lookback_are_ignored(self):
         """Errors older than lookback_hours should not affect Z-score calculation."""
         detector = ZScoreDetector(window_minutes=5, z_threshold=2.0, lookback_hours=1)
-        # Only errors from 2 hours ago
         old_errors = [_ts(-130) for _ in range(100)]
         result = detector.analyze("svc", old_errors, _NOW)
+        assert result is None
+
+    def test_timezone_naive_timestamps_are_coerced(self):
+        """Timezone-naive timestamps should be treated as UTC, not crash."""
+        detector = ZScoreDetector(window_minutes=5, z_threshold=2.0)
+        # Mix naive and aware timestamps
+        naive_spike = [
+            (_NOW - timedelta(seconds=i * 10)).replace(tzinfo=None) for i in range(30)
+        ]
+        baseline = _varied_baseline()
+        # Should not raise TypeError — naive timestamps get coerced to UTC
+        result = detector.analyze("svc", baseline + naive_spike, _NOW)
+        assert result is not None
+
+    def test_timestamp_exactly_at_upper_boundary_is_included(self):
+        """A timestamp exactly at `at` should land in the current window slot."""
+        detector = ZScoreDetector(window_minutes=5, z_threshold=2.0)
+        baseline = _varied_baseline()
+        # Single timestamp AT exactly `at`
+        at_boundary = [_NOW] * 30
+        result = detector.analyze("svc", baseline + at_boundary, _NOW)
+        assert result is not None
+        assert result.error_count == 30
+
+    def test_timestamp_exactly_at_cutoff_is_included(self):
+        """A timestamp exactly at the 1h cutoff boundary should be included (slot 0)."""
+        detector = ZScoreDetector(window_minutes=5, z_threshold=2.0)
+        # Errors only at exactly the cutoff boundary — should not crash
+        cutoff_ts = _NOW - timedelta(hours=1)
+        result = detector.analyze("svc", [cutoff_ts] * 5, _NOW)
+        # No anomaly expected (not in current window), just no crash
         assert result is None

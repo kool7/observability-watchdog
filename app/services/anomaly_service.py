@@ -1,15 +1,20 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import logging
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.anomaly import Anomaly
-from app.models.log_entry import LogLevel
+from app.models.log_entry import LogEntry, LogLevel
+from app.services.anomaly_detector import ZScoreDetector
 
 if TYPE_CHECKING:
     from app.services.anomaly_detector import AnomalyResult
+
+logger = logging.getLogger(__name__)
 
 _DETECTOR_Z_THRESHOLD = 2.0
 _DETECTOR_WINDOW_MINUTES = 5
@@ -35,26 +40,15 @@ async def save_anomaly(db: AsyncSession, result: AnomalyResult) -> Anomaly:
 
 
 async def run_anomaly_check(db: AsyncSession, service_name: str) -> Anomaly | None:
-    """Fetch recent ERROR timestamps for service and run Z-score detection."""
-    from app.services.anomaly_detector import ZScoreDetector
-
+    """Fetch recent ERROR timestamps for a service and run Z-score detection."""
     detector = ZScoreDetector(
         window_minutes=_DETECTOR_WINDOW_MINUTES,
         z_threshold=_DETECTOR_Z_THRESHOLD,
         lookback_hours=_DETECTOR_LOOKBACK_HOURS,
     )
 
-    from datetime import timedelta
-
-    from sqlalchemy import and_
-
     now = datetime.now(timezone.utc)
     cutoff = now - timedelta(hours=_DETECTOR_LOOKBACK_HOURS)
-
-    # We need ERROR log timestamps — query log_entries
-    from sqlalchemy import select
-
-    from app.models.log_entry import LogEntry
 
     log_stmt = select(LogEntry.timestamp).where(
         and_(

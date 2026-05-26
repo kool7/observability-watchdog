@@ -6,6 +6,11 @@ from datetime import datetime, timedelta, timezone
 
 from app.models.anomaly import Severity
 
+# Minimum stdev floor so a flat baseline still produces a meaningful z-score
+# when a real spike occurs. Set to 1.0 (one standard error unit) to avoid
+# over-sensitivity on low-traffic services.
+_MIN_STDEV = 1.0
+
 
 @dataclass
 class AnomalyResult:
@@ -50,19 +55,19 @@ class ZScoreDetector:
         window_duration = timedelta(minutes=self.window_minutes)
         total_slots = int(timedelta(hours=self.lookback_hours) / window_duration)
 
-        # Bucket timestamps into fixed windows within the lookback period
+        # Bucket timestamps into fixed windows within the lookback period.
+        # Coerce naive timestamps to UTC to avoid TypeError on comparison.
         buckets: dict[int, int] = {}
         for ts in error_timestamps:
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
             if ts < cutoff or ts > at:
                 continue
             # clamp so timestamps at exactly `at` fall in the last slot
             slot = min(int((ts - cutoff) / window_duration), total_slots - 1)
             buckets[slot] = buckets.get(slot, 0) + 1
+
         counts = [buckets.get(i, 0) for i in range(total_slots)]
-
-        if len(counts) < 2:
-            return None
-
         current_count = counts[-1]
         baseline = counts[:-1]
 
@@ -72,10 +77,7 @@ class ZScoreDetector:
         except statistics.StatisticsError:
             return None
 
-        # Use a minimum stdev floor so a perfectly flat baseline still
-        # produces a meaningful z-score when a real spike occurs.
-        stdev = max(stdev, 0.5)
-
+        stdev = max(stdev, _MIN_STDEV)
         z = (current_count - mean) / stdev
 
         if z <= self.z_threshold:
