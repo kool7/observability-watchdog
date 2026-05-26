@@ -112,23 +112,23 @@ Acknowledge and let's start."
 
 ---
 
+_[From here on: every prompt logged exactly as typed — no corrections, no rewrites.]_
+
+---
+
+## Turn 13 — Plugin Steps + Keys Reminder
+
+**Timestamp:** 2026-05-26
+
+"revoiew and test steps are these called or not? keys and url added? I am not gonna remind you again and again and I hope you are following what I suggested you earlier to use the plugin?"
+
+---
+
 ## Turn 14 — CI Failing + Pre-commit + Plugin Compliance
 
 **Timestamp:** 2026-05-26
 
 "ci failing for the CI does looks unusual to me also please add husky prebuild so that lint issues are not there on ci. I didn't see the test and review steps from plugin again? why?"
-
----
-
-_[From here on: every prompt logged exactly as typed — no corrections, no rewrites.]_
-
----
-
-## Turn 21 — Session Resume / Task 6 Start
-
-**Timestamp:** 2026-05-27
-
-[Session resumed after context compaction. No new architect prompt — continuing Task 6: Claude service — AI incident narrative on anomaly detection. Implementing generate_anomaly_narrative via claude-sonnet-4-6, wiring into run_anomaly_check, persisting to Anomaly.ai_narrative.]
 
 ---
 
@@ -149,31 +149,81 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 ---
 
 ## Turn 17 — CI psycopg2 Failure
+
 **Timestamp:** 2026-05-26
 
 "CI is still failing E   ModuleNotFoundError: No module named 'psycopg2' how come this is left we have step defined to install deps needed."
 
 ---
 
-## Turn 20 — Plugin Skills Gap + prompts.md Reminder
-**Timestamp:** 2026-05-27
+## Turn 18 — uv lock Not Pushed
 
-"Merged, These are not the only skills the plugin has few more good one, I hope you are following my instruction do always review what skills can be utilized and decide ahead. Please use this too /code-simplify after significant work has been done. still I can see you missed to update prompt.md which is bad. loopin verify skills as well and I have plywright mcp would suggest to use it the moment frontend changes are added so we can test it efficiently and avoid any bugs to get past us."
+**Timestamp:** 2026-05-26
 
-[Updated memory with full plugin map: BUILD (incremental-implementation, test-driven-development, context-engineering, source-driven-development, doubt-driven-development, frontend-ui-engineering, api-and-interface-design), VERIFY (debugging-and-error-recovery, browser-testing-with-devtools, Playwright MCP for frontend), REVIEW (code-review-and-quality, /code-simplify after significant work, security-and-hardening, performance-optimization). Added mandatory rule: prompts.md and tasks/todo.md must be updated at every task boundary.]
+"uv lock updated but not pushed."
 
 ---
 
-## Turn 19 — Tasks Marked + Task 5 Anomaly Detector
+## Turn 19 — PR #3 Merged, Proceed
+
+**Timestamp:** 2026-05-26
+
+"Reviewd and merged, let's move to next step."
+
+---
+
+## Turn 20 — GitHub Secrets Setup
+
+**Timestamp:** 2026-05-26
+
+[Image shared showing GitHub repository secrets page — architect confirming env vs repo secrets question for DATABASE_URL and ANTHROPIC_API_KEY CI configuration.]
+
+---
+
+## Turn 21 — Session Resumed + Task 4 Push + PR
+
+**Timestamp:** 2026-05-26
+
+[Session resumed from context compaction — continuing Task 4 log ingestion. Architect instruction: "Please push this to git and create pr. I will review it."]
+
+---
+
+## Turn 22 — Merge Task 5 PR + todo.md Reminder
+
 **Timestamp:** 2026-05-26
 
 "merged let's proceed ahead with next task in line. I can see you are not marking todo's properly check the work that has been done mark task and start new task please."
 
-[Marked tasks 2, 3, 4 completed. Started Task 5. Built ZScoreDetector with 5-min rolling windows, Z>2.0 threshold, 1h lookback, severity mapping LOW/MEDIUM/HIGH/CRITICAL. Added save_anomaly and run_anomaly_check service. Wired detection into POST /logs/ingest. Added autouse mock_anomaly_check fixture to conftest so existing tests don't hit DB. 49 tests pass at 83% coverage. All lints clean.]
+---
+
+## Turn 23 — tasks.md Discipline + Build Skills Image
+
+**Timestamp:** 2026-05-26
+
+"same mistake again why is it so that we are forgetting to update tasks.md? I want you to always look at the plan task.md whenever you start new task and end implementation before creating pr? can you make sure do remember these instrution along with others? thse are from build make sure we use rrquired ones always. I am closely watching reasoning steps make sure we utilize this agent skill plugin thoroughly."
 
 ---
 
-## Turn 18 — Task 4 Completion + Code Review Fixes
-**Timestamp:** 2026-05-26
+## Turn 24 — Plugin Skills Gap + prompts.md Reminder + Playwright MCP
 
-[Session resumed from context compaction — continuing Task 4 log ingestion. Ran black, full test suite passed 30/30. Spawned code-reviewer agent. Reviewer found: LIMIT applied before WHERE filters, no MAX_LIMIT cap, level: str on GET /logs bypasses enum validation, batch ingest doing N sequential commits, _storage.reset() accessing private state without guard, burst test not asserting first 10 succeed, missing limit/since/until/invalid-UUID test coverage. Fixed all critical and major findings: filters applied before LIMIT + MAX_LIMIT=1000, level: LogLevel on GET /logs returns 422 on invalid, create_log_entries_bulk with single transaction, conftest guard on _storage, burst test asserts count(201)>=10, added 5 new test cases, suppressed slowapi mypy false positive. 35 tests pass at 85% coverage, all lints clean. Awaiting architect approval to push and create PR #4.]
+**Timestamp:** 2026-05-27
+
+"Merged, These are not the only skills the plugin has few more good one, I hope you are following my instruction do always review what skills can be utilized and decide ahead. Please use this too /code-simplify after significant work has been done. still I can see you missed to update prompt.md which is bad. loopin verify skills as well and I have plywright mcp would suggest to use it the moment frontend changes are added so we can test it efficiently and avoid any bugs to get past us."
+
+---
+
+## Turn 25 — Session Resumed / Task 6 Start
+
+**Timestamp:** 2026-05-27
+
+[Session resumed after context compaction. Continuing Task 6: Claude service — AI incident narrative on anomaly detection. Implementing generate_anomaly_narrative via claude-sonnet-4-6, wiring into run_anomaly_check, persisting to Anomaly.ai_narrative.]
+
+---
+
+## Turn 26 — prompts.md Missing Entries
+
+**Timestamp:** 2026-05-27
+
+"can see lots of prompt entry is missing in prompt.md"
+
+---
