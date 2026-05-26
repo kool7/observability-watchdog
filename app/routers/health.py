@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -16,8 +16,8 @@ async def health_check():
 
 @router.get("/health/trends", response_model=list[TrendBucketResponse])
 async def health_trends(
-    service_name: str | None = None,
-    hours: int = 6,
+    service_name: str | None = Query(default=None, min_length=1),
+    hours: int = Query(default=6, ge=1, le=168),
     db: AsyncSession = Depends(get_db),
 ):
     """Return per-service log counts in 5-minute buckets over the past N hours."""

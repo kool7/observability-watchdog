@@ -1,23 +1,24 @@
 """Tests for GET /health/trends — 5-minute bucket time-series."""
 
 from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 from httpx import ASGITransport, AsyncClient
 
 from app.main import app
+from app.services.trends_service import TrendBucket
 
 
 def _make_bucket(
     service_name="auth-service", error_count=5, warn_count=2, info_count=10
 ):
-    b = MagicMock()
-    b.bucket = datetime.now(timezone.utc).replace(second=0, microsecond=0)
-    b.service_name = service_name
-    b.error_count = error_count
-    b.warn_count = warn_count
-    b.info_count = info_count
-    return b
+    return TrendBucket(
+        bucket=datetime.now(timezone.utc).replace(second=0, microsecond=0),
+        service_name=service_name,
+        error_count=error_count,
+        warn_count=warn_count,
+        info_count=info_count,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -136,3 +137,35 @@ class TestHealthTrends:
                 resp = await client.get("/health/trends")
 
         assert resp.json() == []
+
+    async def test_hours_zero_returns_422(self):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            resp = await client.get("/health/trends?hours=0")
+
+        assert resp.status_code == 422
+
+    async def test_hours_negative_returns_422(self):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            resp = await client.get("/health/trends?hours=-1")
+
+        assert resp.status_code == 422
+
+    async def test_hours_above_max_returns_422(self):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            resp = await client.get("/health/trends?hours=169")
+
+        assert resp.status_code == 422
+
+    async def test_empty_service_name_returns_422(self):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            resp = await client.get("/health/trends?service_name=")
+
+        assert resp.status_code == 422
