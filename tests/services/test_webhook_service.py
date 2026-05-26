@@ -195,3 +195,40 @@ class TestFireWebhookErrors:
 
         added = db.add.call_args[0][0]
         assert added.response_status == 0
+
+    async def test_webhook_fired_not_set_on_5xx(self):
+        from app.services.webhook_service import fire
+
+        anomaly = _make_anomaly()
+        db = _make_db()
+
+        mock_response = MagicMock()
+        mock_response.status_code = 503
+
+        with patch("app.services.webhook_service.httpx.AsyncClient") as mock_cls:
+            mock_client = AsyncMock()
+            mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+            mock_client.__aexit__ = AsyncMock(return_value=False)
+            mock_client.post = AsyncMock(return_value=mock_response)
+            mock_cls.return_value = mock_client
+
+            await fire(anomaly, db)
+
+        assert anomaly.webhook_fired is False
+
+    async def test_webhook_fired_not_set_on_http_failure(self):
+        from app.services.webhook_service import fire
+
+        anomaly = _make_anomaly()
+        db = _make_db()
+
+        with patch("app.services.webhook_service.httpx.AsyncClient") as mock_cls:
+            mock_client = AsyncMock()
+            mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+            mock_client.__aexit__ = AsyncMock(return_value=False)
+            mock_client.post = AsyncMock(side_effect=Exception("connection refused"))
+            mock_cls.return_value = mock_client
+
+            await fire(anomaly, db)
+
+        assert anomaly.webhook_fired is False

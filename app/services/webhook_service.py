@@ -55,7 +55,9 @@ async def fire(anomaly: Anomaly, db: AsyncSession) -> None:
         response_status=status_code,
     )
     db.add(event)
-    anomaly.webhook_fired = True
+    # Only mark as fired when the target confirmed receipt (2xx response)
+    if 200 <= status_code < 300:
+        anomaly.webhook_fired = True
     await db.commit()
     await db.refresh(event)
 

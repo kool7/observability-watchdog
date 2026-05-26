@@ -55,6 +55,19 @@ class TestWebhookReceive:
 
         assert resp.status_code == 200
 
+    async def test_accepts_non_json_body_without_crashing(self):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            resp = await client.post(
+                "/webhook/receive",
+                content=b"not-json-at-all",
+                headers={"content-type": "text/plain"},
+            )
+
+        assert resp.status_code == 200
+        assert resp.json() == {"received": True}
+
 
 # ---------------------------------------------------------------------------
 # GET /webhook/events

@@ -16,7 +16,10 @@ router = APIRouter(tags=["webhooks"])
 @router.post("/webhook/receive")
 async def receive_webhook(request: Request) -> dict:
     """Accept any inbound webhook payload and acknowledge it."""
-    body = await request.json()
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
     logger.info("Webhook received: %s", body)
     return {"received": True}
 
