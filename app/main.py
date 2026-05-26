@@ -13,6 +13,7 @@ from app.middleware.error_handler import (
 from app.middleware.rate_limiter import limiter
 from app.routers.health import router as health_router
 from app.routers.logs import router as logs_router
+from app.routers.webhooks import router as webhooks_router
 
 
 @asynccontextmanager
@@ -43,3 +44,4 @@ app.add_exception_handler(Exception, unhandled_error_handler)  # type: ignore[ar
 
 app.include_router(health_router)
 app.include_router(logs_router)
+app.include_router(webhooks_router)

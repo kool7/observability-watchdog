@@ -1,0 +1,113 @@
+"""Tests for the webhook router — POST /webhook/receive and GET /webhook/events."""
+
+from unittest.mock import AsyncMock, patch
+
+from httpx import ASGITransport, AsyncClient
+
+from app.main import app
+from tests.__fixtures__.webhook_events import make_webhook_event
+
+# ---------------------------------------------------------------------------
+# POST /webhook/receive
+# ---------------------------------------------------------------------------
+
+
+class TestWebhookReceive:
+    async def test_returns_200_with_received_true(self):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            resp = await client.post(
+                "/webhook/receive", json={"service": "auth", "event": "anomaly"}
+            )
+
+        assert resp.status_code == 200
+        assert resp.json() == {"received": True}
+
+    async def test_accepts_any_json_payload(self):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            resp = await client.post(
+                "/webhook/receive",
+                json={"nested": {"a": 1, "b": [1, 2, 3]}, "flag": True},
+            )
+
+        assert resp.status_code == 200
+
+    async def test_accepts_empty_payload(self):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            resp = await client.post("/webhook/receive", json={})
+
+        assert resp.status_code == 200
+
+    async def test_accepts_non_json_body_without_crashing(self):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            resp = await client.post(
+                "/webhook/receive",
+                content=b"not-json-at-all",
+                headers={"content-type": "text/plain"},
+            )
+
+        assert resp.status_code == 200
+        assert resp.json() == {"received": True}
+
+
+# ---------------------------------------------------------------------------
+# GET /webhook/events
+# ---------------------------------------------------------------------------
+
+
+class TestWebhookEvents:
+    async def test_returns_list_of_events(self):
+        with patch(
+            "app.routers.webhooks.list_webhook_events", new_callable=AsyncMock
+        ) as mock_list:
+            mock_list.return_value = [make_webhook_event()]
+
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                resp = await client.get("/webhook/events")
+
+        assert resp.status_code == 200
+        body = resp.json()
+        assert isinstance(body, list)
+        assert len(body) == 1
+        assert body[0]["response_status"] == 200
+
+    async def test_returns_empty_list_when_no_events(self):
+        with patch(
+            "app.routers.webhooks.list_webhook_events", new_callable=AsyncMock
+        ) as mock_list:
+            mock_list.return_value = []
+
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                resp = await client.get("/webhook/events")
+
+        assert resp.status_code == 200
+        assert resp.json() == []
+
+    async def test_event_has_required_fields(self):
+        with patch(
+            "app.routers.webhooks.list_webhook_events", new_callable=AsyncMock
+        ) as mock_list:
+            mock_list.return_value = [make_webhook_event()]
+
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                resp = await client.get("/webhook/events")
+
+        item = resp.json()[0]
+        assert "id" in item
+        assert "anomaly_id" in item
+        assert "fired_at" in item
+        assert "payload" in item
+        assert "response_status" in item

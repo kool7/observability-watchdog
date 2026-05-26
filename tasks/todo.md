@@ -21,7 +21,7 @@
 ## Checkpoint 3: POST errors → anomaly detected → Claude narrative generated
 
 ## Phase 4: Webhook Pipeline
-- [ ] Task 7 (M): Webhook service + router — fire + receive + log
+- [x] Task 7 (M): Webhook service + router — fire + receive + log
 
 ## Checkpoint 4: Full pipeline — ingest → detect → narrate → webhook fired
 
