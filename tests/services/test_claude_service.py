@@ -76,6 +76,17 @@ class TestGenerateAnomalyNarrative:
         call_kwargs = mock_client.messages.create.call_args.kwargs
         assert call_kwargs["model"] == "claude-sonnet-4-6"
 
+    async def test_passes_system_prompt(self):
+        from app.prompts import ANOMALY_SYSTEM
+        from app.services.claude_service import generate_anomaly_narrative
+
+        mock_client = _make_mock_client(_mock_anthropic_response("narrative text"))
+        with patch("app.services.claude_service._get_client", return_value=mock_client):
+            await generate_anomaly_narrative(_make_result())
+
+        call_kwargs = mock_client.messages.create.call_args.kwargs
+        assert call_kwargs["system"] == ANOMALY_SYSTEM
+
     async def test_prompt_includes_service_name(self):
         from app.services.claude_service import generate_anomaly_narrative
 

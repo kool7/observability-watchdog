@@ -5,6 +5,11 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app.config import settings
+from app.middleware.error_handler import (
+    WatchdogError,
+    unhandled_error_handler,
+    watchdog_error_handler,
+)
 from app.middleware.rate_limiter import limiter
 from app.routers.health import router as health_router
 from app.routers.logs import router as logs_router
@@ -33,6 +38,8 @@ app = FastAPI(
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
+app.add_exception_handler(WatchdogError, watchdog_error_handler)  # type: ignore[arg-type]
+app.add_exception_handler(Exception, unhandled_error_handler)  # type: ignore[arg-type]
 
 app.include_router(health_router)
 app.include_router(logs_router)

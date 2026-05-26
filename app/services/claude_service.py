@@ -7,6 +7,7 @@ from anthropic import AsyncAnthropic
 from anthropic.types import TextBlock
 
 from app.config import settings
+from app.prompts import ANOMALY_SYSTEM, ANOMALY_USER
 
 if TYPE_CHECKING:
     from app.services.anomaly_detector import AnomalyResult
@@ -23,17 +24,15 @@ def _get_client() -> AsyncAnthropic:
     return _client
 
 
-def _build_prompt(result: AnomalyResult) -> str:
-    window = f"{result.window_start.isoformat()} to {result.window_end.isoformat()}"
-    return (
-        f"An anomaly was detected in service '{result.service_name}'.\n"
-        f"Severity: {result.severity.value}\n"
-        f"Z-score: {result.z_score:.2f} (threshold: {result.threshold_breached})\n"
-        f"Error count in window: {result.error_count}\n"
-        f"Window: {window}\n\n"
-        "Write a concise 2-3 sentence incident narrative suitable for an "
-        "on-call engineer. Be specific about the service, severity, and error "
-        "spike. Do not suggest fixes."
+def _build_user_prompt(result: AnomalyResult) -> str:
+    return ANOMALY_USER.format(
+        service_name=result.service_name,
+        severity=result.severity.value,
+        z_score=result.z_score,
+        threshold=result.threshold_breached,
+        error_count=result.error_count,
+        window_start=result.window_start.isoformat(),
+        window_end=result.window_end.isoformat(),
     )
 
 
@@ -43,7 +42,8 @@ async def generate_anomaly_narrative(result: AnomalyResult) -> str:
         message = await _get_client().messages.create(
             model=settings.claude_model,
             max_tokens=settings.claude_max_tokens,
-            messages=[{"role": "user", "content": _build_prompt(result)}],
+            system=ANOMALY_SYSTEM,
+            messages=[{"role": "user", "content": _build_user_prompt(result)}],
         )
         block = message.content[0]
         if isinstance(block, TextBlock):
