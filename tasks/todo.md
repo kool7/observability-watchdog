@@ -4,18 +4,18 @@
 
 ## Phase 1: Foundation
 - [x] Task 1 (S): Project scaffold + uv init + prompts.md Turn 1
-- [ ] Task 2 (M): Database layer — engine, models, Alembic migrations → Neon
+- [x] Task 2 (M): Database layer — engine, models, Alembic migrations → Neon
 
-## Checkpoint 1: `uv sync` clean + `alembic upgrade head` clean
+## Checkpoint 1: ✅ `uv sync` clean + `alembic upgrade head` clean
 
 ## Phase 2: Log Ingestion
-- [ ] Task 3 (M): Pydantic schemas + FastAPI app bootstrap + GET /health
-- [ ] Task 4 (M): Log ingestion router — POST /logs/ingest + GET /logs + rate limiting
+- [x] Task 3 (M): Pydantic schemas + FastAPI app bootstrap + GET /health
+- [x] Task 4 (M): Log ingestion router — POST /logs/ingest + GET /logs + rate limiting
 
-## Checkpoint 2: Can POST a log and GET it back, 429 on rate limit exceeded
+## Checkpoint 2: ✅ Can POST a log and GET it back, 429 on rate limit exceeded
 
 ## Phase 3: Anomaly Detection
-- [ ] Task 5 (M): Anomaly detector service — Z-score statistical detection
+- [x] Task 5 (M): Anomaly detector service — Z-score statistical detection
 - [ ] Task 6 (M): Claude service — AI incident narrative on anomaly
 
 ## Checkpoint 3: POST errors → anomaly detected → Claude narrative generated
@@ -41,7 +41,7 @@
 
 ## Phase 9: Docs + GitHub
 - [ ] Task 12 (S): README + ASCII architecture + prompts.md final
-- [ ] Task 13 (S): git init + PRIVATE GitHub repo via MCP + branch protection (no merge without approval) + PR via create-pr skill
+- [x] Task 13 (S): git init + PRIVATE GitHub repo via MCP + branch protection (no merge without approval) + PR via create-pr skill
 
 ## Final Checkpoint: All green, PR open, repo private, branch protection active
 
@@ -50,3 +50,4 @@
 - No push to GitHub without architect approval
 - No merge to main without PR + approval (branch protection)
 - prompts.md updated after every turn
+- tasks/todo.md updated at START and END of every task (before creating PR)
