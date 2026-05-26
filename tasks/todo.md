@@ -26,7 +26,7 @@
 ## Checkpoint 4: Full pipeline — ingest → detect → narrate → webhook fired
 
 ## Phase 5: Health Trends
-- [ ] Task 8 (S): Health trends endpoint — GET /health/trends (5-min buckets)
+- [x] Task 8 (S): Health trends endpoint — GET /health/trends (5-min buckets)
 
 ## Phase 6: Dashboard
 - [ ] Task 9 (M): Streamlit dashboard — 5 charts, 10s auto-refresh
