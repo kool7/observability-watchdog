@@ -168,10 +168,16 @@ class TestRunAnomalyCheckWithNarrative:
         mock_result.scalars.return_value = mock_scalars
         mock_db.execute = AsyncMock(return_value=mock_result)
 
-        with patch(
-            "app.services.anomaly_service.generate_anomaly_narrative",
-            new_callable=AsyncMock,
-        ) as mock_narrative:
+        with (
+            patch(
+                "app.services.anomaly_service.generate_anomaly_narrative",
+                new_callable=AsyncMock,
+            ) as mock_narrative,
+            patch(
+                "app.services.anomaly_service.fire_webhook",
+                new_callable=AsyncMock,
+            ),
+        ):
             mock_narrative.return_value = "auth-service spike detected."
             anomaly = await run_anomaly_check(mock_db, "auth-service")
 

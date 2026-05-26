@@ -11,6 +11,7 @@ from app.models.anomaly import Anomaly
 from app.models.log_entry import LogEntry, LogLevel
 from app.services.anomaly_detector import ZScoreDetector
 from app.services.claude_service import generate_anomaly_narrative
+from app.services.webhook_service import fire as fire_webhook
 
 if TYPE_CHECKING:
     from app.services.anomaly_detector import AnomalyResult
@@ -69,4 +70,6 @@ async def run_anomaly_check(db: AsyncSession, service_name: str) -> Anomaly | No
         return None
 
     narrative = await generate_anomaly_narrative(detection)
-    return await save_anomaly(db, detection, ai_narrative=narrative)
+    anomaly = await save_anomaly(db, detection, ai_narrative=narrative)
+    await fire_webhook(anomaly, db)
+    return anomaly
