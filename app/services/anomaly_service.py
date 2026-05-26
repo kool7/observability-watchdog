@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.anomaly import Anomaly
 from app.models.log_entry import LogEntry, LogLevel
 from app.services.anomaly_detector import ZScoreDetector
+from app.services.claude_service import generate_anomaly_narrative
 
 if TYPE_CHECKING:
     from app.services.anomaly_detector import AnomalyResult
@@ -21,7 +22,9 @@ _DETECTOR_WINDOW_MINUTES = 5
 _DETECTOR_LOOKBACK_HOURS = 1
 
 
-async def save_anomaly(db: AsyncSession, result: AnomalyResult) -> Anomaly:
+async def save_anomaly(
+    db: AsyncSession, result: AnomalyResult, ai_narrative: str | None = None
+) -> Anomaly:
     anomaly = Anomaly(
         service_name=result.service_name,
         detected_at=result.detected_at,
@@ -31,6 +34,7 @@ async def save_anomaly(db: AsyncSession, result: AnomalyResult) -> Anomaly:
         z_score=result.z_score,
         threshold_breached=result.threshold_breached,
         severity=result.severity,
+        ai_narrative=ai_narrative,
         webhook_fired=False,
     )
     db.add(anomaly)
@@ -64,4 +68,5 @@ async def run_anomaly_check(db: AsyncSession, service_name: str) -> Anomaly | No
     if detection is None:
         return None
 
-    return await save_anomaly(db, detection)
+    narrative = await generate_anomaly_narrative(detection)
+    return await save_anomaly(db, detection, ai_narrative=narrative)
