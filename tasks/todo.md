@@ -3,7 +3,7 @@
 > Updated after every build turn | Deadline: Wednesday evening
 
 ## Phase 1: Foundation
-- [ ] Task 1 (S): Project scaffold + uv init + prompts.md Turn 1
+- [x] Task 1 (S): Project scaffold + uv init + prompts.md Turn 1
 - [ ] Task 2 (M): Database layer — engine, models, Alembic migrations → Neon
 
 ## Checkpoint 1: `uv sync` clean + `alembic upgrade head` clean
