@@ -1,3 +1,10 @@
+import os
+
+# Set defaults before any app module is imported so pydantic-settings
+# picks up a valid asyncpg URL even when .env has a bare postgresql:// URL.
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
+os.environ.setdefault("ANTHROPIC_API_KEY", "sk-ant-test")
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 
