@@ -235,3 +235,11 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 "I have added review comments you might wanna check those."
 
 ---
+
+## Turn 28 — PR #6 Additional Review Comments + GitHub MCP Resolution
+
+**Timestamp:** 2026-05-27
+
+"Added some more review comments and also make sure to use github mcp and mark the comments as resolved so that reviewer can understand the comments are resolved and wherever needed add comments on the review comments before marking them resolve."
+
+---
