@@ -29,4 +29,4 @@ class WebhookEvent(Base):
     payload: Mapped[dict] = mapped_column(JSON, nullable=False)
     response_status: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    anomaly: Mapped[Anomaly] = relationship("Anomaly", lazy="select")
+    anomaly: Mapped[Anomaly] = relationship("Anomaly", lazy="raise")

@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import Enum as PyEnum
 
 from sqlalchemy import Boolean, DateTime, Float, Integer, String, Text
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -36,5 +37,7 @@ class Anomaly(Base):
     z_score: Mapped[float] = mapped_column(Float, nullable=False)
     threshold_breached: Mapped[float] = mapped_column(Float, nullable=False)
     ai_narrative: Mapped[str | None] = mapped_column(Text, nullable=True)
-    severity: Mapped[str] = mapped_column(String(20), nullable=False)
+    severity: Mapped[Severity] = mapped_column(
+        SAEnum(Severity, native_enum=False, length=20), nullable=False
+    )
     webhook_fired: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

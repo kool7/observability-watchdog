@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import Enum as PyEnum
 
 from sqlalchemy import DateTime, String, Text
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -23,7 +24,9 @@ class LogEntry(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     service_name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
-    level: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    level: Mapped[LogLevel] = mapped_column(
+        SAEnum(LogLevel, native_enum=False, length=20), nullable=False, index=True
+    )
     message: Mapped[str] = mapped_column(Text, nullable=False)
     timestamp: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, index=True
