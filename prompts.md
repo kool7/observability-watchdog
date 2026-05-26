@@ -236,19 +236,11 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
-## Turn 31 — Task 8 Review: TrendBucket Simplification + /code-simplify
+## Turn 28 — PR #6 Additional Review Comments + GitHub MCP Resolution
 
 **Timestamp:** 2026-05-27
 
-"this might be right time to use /code-simplify if needed also added review comment might wanna check it. The github mcp uses graphQL and yes you can resolve the comment try because that is what we have been doing. Also you haven't reason on this from my previous comment 'this might be right time to use /code-simplify' prompt.md not updated. I am seeing you tend to forget things the moment context window is filled and /compact is run tell me upfront the moment window reached 80% limit so important instructions can be carried forward."
-
----
-
-## Turn 30 — Task 8: Health Trends Endpoint
-
-**Timestamp:** 2026-05-27
-
-"Merged, please proceed with next task"
+"Added some more review comments and also make sure to use github mcp and mark the comments as resolved so that reviewer can understand the comments are resolved and wherever needed add comments on the review comments before marking them resolve."
 
 ---
 
@@ -260,10 +252,68 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
-## Turn 28 — PR #6 Additional Review Comments + GitHub MCP Resolution
+## Turn 30 — Task 8: Health Trends Endpoint
 
 **Timestamp:** 2026-05-27
 
-"Added some more review comments and also make sure to use github mcp and mark the comments as resolved so that reviewer can understand the comments are resolved and wherever needed add comments on the review comments before marking them resolve."
+"Merged, please proceed with next task"
+
+---
+
+## Turn 31 — Task 8 PR Review Comment: TrendBucket
+
+**Timestamp:** 2026-05-27
+
+"Added review comments."
+
+[Review comment on PR #8: "better to keep in models unless this is Dto" — flagging the intermediate TrendBucket dataclass as unnecessary when a Pydantic response schema already exists.]
+
+---
+
+## Turn 32 — faker in pyproject.toml
+
+**Timestamp:** 2026-05-27
+
+"Why project.toml is not part of git changes I can see a new package faker is added"
+
+---
+
+## Turn 33 — Task 8 Review: TrendBucket Simplification + /code-simplify + Context Window
+
+**Timestamp:** 2026-05-27
+
+"this might be right time to use /code-simplify if needed also added review comment might wanna check it. The github mcp uses graphQL and yes you can resolve the comment try because that is what we have been doing. Also you haven't reason on this from my previous comment 'this might be right time to use /code-simplify' prompt.md not updated. I am seeing you tend to forget things the moment context window is filled and /compact is run tell me upfront the moment window reached 80% limit so important instructions can be carried forward."
+
+---
+
+## Turn 34 — CLAUDE.md + Memory Update Instruction
+
+**Timestamp:** 2026-05-27
+
+"claude.md needs to be updated as well besides your memory cause you are still missing my instructions sometimes. I will use new plugin agent-memory post our current phase is finished."
+
+---
+
+## Turn 35 — Task 9: Streamlit Dashboard Start
+
+**Timestamp:** 2026-05-27
+
+"Merged we can proceed ahead now."
+
+---
+
+## Turn 36 — Task 9: Playwright Testing + Review Comment Re-run Rule
+
+**Timestamp:** 2026-05-27
+
+"I told you to use plywright for frontend testing automation and test it yourself, update memoery claude md if needed so that you remember when and where what skill needs to be used the plugin's skill might suggest to use devtools mcp I prefer plywright mcp but before making this decision assess and procced ahead, always make sure that once I give review comment and code changes are done you need to and shall always run test and review steps again."
+
+---
+
+## Turn 37 — Missing Prompts Audit + Root Cause Question
+
+**Timestamp:** 2026-05-27
+
+"prompts seems missing would you mind adding those missing prompts? why and what could be the reason that you are forgetting this specific thing to do sometime?"
 
 ---

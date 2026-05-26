@@ -2,7 +2,7 @@
 
 import logging
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -26,7 +26,8 @@ async def receive_webhook(request: Request) -> dict:
 
 @router.get("/webhook/events", response_model=list[WebhookEventResponse])
 async def get_webhook_events(
+    limit: int = Query(default=50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
 ):
-    """Return the last 50 fired webhook events, newest first."""
-    return await list_webhook_events(db)
+    """Return the last N fired webhook events, newest first."""
+    return await list_webhook_events(db, limit=limit)
