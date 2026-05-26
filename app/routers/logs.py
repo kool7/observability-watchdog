@@ -6,8 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.rate_limiter import limiter
+from app.models.log_entry import LogLevel
 from app.schemas.log_entry import LogEntryCreate, LogEntryResponse
 from app.services.log_service import (
+    create_log_entries_bulk,
     create_log_entry,
     get_log_entry,
     list_log_entries,
@@ -28,13 +30,13 @@ async def ingest_logs(
     db: AsyncSession = Depends(get_db),
 ):
     if isinstance(payload, list):
-        return [await create_log_entry(db, item) for item in payload]
+        return await create_log_entries_bulk(db, payload)
     return await create_log_entry(db, payload)
 
 
 @router.get("", response_model=list[LogEntryResponse])
 async def get_logs(
-    level: str | None = None,
+    level: LogLevel | None = None,
     service_name: str | None = None,
     since: datetime | None = None,
     until: datetime | None = None,

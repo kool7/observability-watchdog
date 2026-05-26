@@ -14,7 +14,9 @@ def reset_rate_limiter():
     """Clear slowapi in-memory storage between tests to prevent state bleed."""
     from app.middleware.rate_limiter import limiter
 
-    limiter._storage.reset()
+    storage = getattr(limiter, "_storage", None)
+    if storage is not None:
+        storage.reset()
     yield
 
 

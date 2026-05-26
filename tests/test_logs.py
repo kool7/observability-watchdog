@@ -4,6 +4,8 @@ from uuid import uuid4
 
 from httpx import AsyncClient
 
+from app.models.log_entry import LogLevel
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -83,16 +85,20 @@ class TestIngestBatch:
     async def test_batch_ingest_returns_201(self, client: AsyncClient):
         payloads = [_log_payload(), _log_payload(level="INFO", message="ok")]
         fakes = [_make_db_log(p) for p in payloads]
-        with patch("app.routers.logs.create_log_entry", new_callable=AsyncMock) as m:
-            m.side_effect = fakes
+        with patch(
+            "app.routers.logs.create_log_entries_bulk", new_callable=AsyncMock
+        ) as m:
+            m.return_value = fakes
             response = await client.post("/logs/ingest", json=payloads)
         assert response.status_code == 201
 
     async def test_batch_ingest_returns_list(self, client: AsyncClient):
         payloads = [_log_payload(), _log_payload(level="WARN", message="slow")]
         fakes = [_make_db_log(p) for p in payloads]
-        with patch("app.routers.logs.create_log_entry", new_callable=AsyncMock) as m:
-            m.side_effect = fakes
+        with patch(
+            "app.routers.logs.create_log_entries_bulk", new_callable=AsyncMock
+        ) as m:
+            m.return_value = fakes
             response = await client.post("/logs/ingest", json=payloads)
         assert isinstance(response.json(), list)
         assert len(response.json()) == 2
@@ -124,7 +130,11 @@ class TestGetLogs:
             response = await client.get("/logs?level=ERROR")
         assert response.status_code == 200
         _, kwargs = m.call_args
-        assert kwargs.get("level") == "ERROR"
+        assert kwargs.get("level") == LogLevel.ERROR
+
+    async def test_get_logs_invalid_level_returns_422(self, client: AsyncClient):
+        response = await client.get("/logs?level=NONSENSE")
+        assert response.status_code == 422
 
     async def test_get_logs_filter_by_service(self, client: AsyncClient):
         with patch("app.routers.logs.list_log_entries", new_callable=AsyncMock) as m:
@@ -133,6 +143,32 @@ class TestGetLogs:
         assert response.status_code == 200
         _, kwargs = m.call_args
         assert kwargs.get("service_name") == "auth-service"
+
+    async def test_get_logs_limit_forwarded(self, client: AsyncClient):
+        with patch("app.routers.logs.list_log_entries", new_callable=AsyncMock) as m:
+            m.return_value = []
+            response = await client.get("/logs?limit=5")
+        assert response.status_code == 200
+        _, kwargs = m.call_args
+        assert kwargs.get("limit") == 5
+
+    async def test_get_logs_since_forwarded(self, client: AsyncClient):
+        ts = "2025-01-01T00:00:00Z"
+        with patch("app.routers.logs.list_log_entries", new_callable=AsyncMock) as m:
+            m.return_value = []
+            response = await client.get(f"/logs?since={ts}")
+        assert response.status_code == 200
+        _, kwargs = m.call_args
+        assert kwargs.get("since") is not None
+
+    async def test_get_logs_until_forwarded(self, client: AsyncClient):
+        ts = "2025-12-31T23:59:59Z"
+        with patch("app.routers.logs.list_log_entries", new_callable=AsyncMock) as m:
+            m.return_value = []
+            response = await client.get(f"/logs?until={ts}")
+        assert response.status_code == 200
+        _, kwargs = m.call_args
+        assert kwargs.get("until") is not None
 
 
 # ---------------------------------------------------------------------------
@@ -153,3 +189,7 @@ class TestGetLogById:
             m.return_value = None
             response = await client.get(f"/logs/{uuid4()}")
         assert response.status_code == 404
+
+    async def test_get_by_invalid_uuid_returns_422(self, client: AsyncClient):
+        response = await client.get("/logs/not-a-uuid")
+        assert response.status_code == 422
