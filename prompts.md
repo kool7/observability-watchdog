@@ -81,6 +81,7 @@ Acknowledge and let's start."
 ---
 
 ## Turn 9 — Proceed with Task 1
+
 **Timestamp:** 2026-05-26
 
 "Yes, proceed with the task, please do utilize the plugin thoroughly, I need that to be used as best as I can."
@@ -88,6 +89,7 @@ Acknowledge and let's start."
 ---
 
 ## Turn 10 — GitHub Approval + Plugin Compliance
+
 **Timestamp:** 2026-05-26
 
 "Sure, proceed with this plan. Follow proper naming convention for even naming the github repo, I am good with what has been presented. But, unfortunately, I am seeing that test and review steps are not even ran are yiu sure you are following what I suggested you earlier to use the plugin?"
@@ -95,6 +97,7 @@ Acknowledge and let's start."
 ---
 
 ## Turn 11 — PR Prefix Confirmed
+
 **Timestamp:** 2026-05-26
 
 "Use OW that's better we always use project name initials for each PR title."
@@ -102,10 +105,42 @@ Acknowledge and let's start."
 ---
 
 ## Turn 12 — README Approved
+
 **Timestamp:** 2026-05-26
 
 "looks good for now we will refine it later once work is done."
 
 ---
 
+## Turn 14 — CI Failing + Pre-commit + Plugin Compliance
+
+**Timestamp:** 2026-05-26
+
+"ci failing for the CI does looks unusual to me also please add husky prebuild so that lint issues are not there on ci. I didn't see the test and review steps from plugin again? why?"
+
+---
+
 _[From here on: every prompt logged exactly as typed — no corrections, no rewrites.]_
+
+---
+
+## Turn 15 — Merge PR #2, Proceed, Plugin Compliance
+
+**Timestamp:** 2026-05-26
+
+"merged proceed with next task, also make sure we are not missing nay steps in CI. I do not see unit test added for feature if we would followed the instruction I gave and plugin suggested we would have been having lot more tests. PR is merged move with next task I do not wanna see any more issues with instruction not followed."
+
+---
+
+## Turn 16 — CI Trigger Pattern + prompts.md Gap
+
+**Timestamp:** 2026-05-26
+
+"why ci is running on push and pull? this is unusual pattern I am seeing also ci failed. Why prompt.md is not updated at all for above message?"
+
+---
+
+## Turn 17 — CI psycopg2 Failure
+**Timestamp:** 2026-05-26
+
+"CI is still failing E   ModuleNotFoundError: No module named 'psycopg2' how come this is left we have step defined to install deps needed."
