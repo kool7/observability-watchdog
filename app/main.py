@@ -1,9 +1,13 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.config import settings
+from app.middleware.rate_limiter import limiter
 from app.routers.health import router as health_router
+from app.routers.logs import router as logs_router
 
 
 @asynccontextmanager
@@ -27,4 +31,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.include_router(health_router)
+app.include_router(logs_router)
