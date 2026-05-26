@@ -89,7 +89,11 @@ webhook_df = fetch_webhook_events()
 total_errors = int(trends_df["error_count"].sum()) if not trends_df.empty else 0
 total_anomalies = len(anomalies_df)
 webhooks_fired = (
-    int(webhook_df["response_status"].between(200, 299).sum())
+    int(
+        webhook_df["response_status"]
+        .apply(lambda s: isinstance(s, (int, float)) and 200 <= s < 300)
+        .sum()
+    )
     if not webhook_df.empty
     else 0
 )
@@ -178,33 +182,38 @@ with col_left:
         st.info("No anomalies detected yet.")
     else:
         SEVERITY_ICON = {"LOW": "🔵", "MEDIUM": "🟡", "HIGH": "🟠", "CRITICAL": "🔴"}
-        display = anomalies_df[
-            [
-                "detected_at",
-                "service_name",
-                "severity",
-                "error_count",
-                "z_score",
-                "webhook_fired",
-            ]
-        ].copy()
-        display["severity"] = display["severity"].apply(
-            lambda s: f"{SEVERITY_ICON.get(s, '')} {s}"
-        )
-        display["webhook_fired"] = display["webhook_fired"].apply(
-            lambda v: "✅" if v else "❌"
-        )
-        display.columns = [
-            "Detected At",
-            "Service",
-            "Severity",
-            "Errors",
-            "Z-Score",
-            "Webhook",
+        _required = [
+            "detected_at",
+            "service_name",
+            "severity",
+            "error_count",
+            "z_score",
+            "webhook_fired",
         ]
-        st.dataframe(
-            display.reset_index(drop=True), use_container_width=True, hide_index=True
-        )
+        _missing = [c for c in _required if c not in anomalies_df.columns]
+        if _missing:
+            st.warning(f"Unexpected API response — missing columns: {_missing}")
+        else:
+            display = anomalies_df[_required].copy()
+            display["severity"] = display["severity"].apply(
+                lambda s: f"{SEVERITY_ICON.get(s, '')} {s}"
+            )
+            display["webhook_fired"] = display["webhook_fired"].apply(
+                lambda v: "✅" if v else "❌"
+            )
+            display.columns = [
+                "Detected At",
+                "Service",
+                "Severity",
+                "Errors",
+                "Z-Score",
+                "Webhook",
+            ]
+            st.dataframe(
+                display.reset_index(drop=True),
+                use_container_width=True,
+                hide_index=True,
+            )
 
 # ---------------------------------------------------------------------------
 # Chart 4 — AI Narrative Panel

@@ -18,7 +18,11 @@ async def get_anomalies(
     return await list_anomalies(db, limit=limit)
 
 
-@router.get("/anomalies/{anomaly_id}", response_model=AnomalyResponse)
+@router.get(
+    "/anomalies/{anomaly_id}",
+    response_model=AnomalyResponse,
+    responses={404: {"description": "Anomaly not found"}},
+)
 async def get_anomaly_by_id(
     anomaly_id: UUID,
     db: AsyncSession = Depends(get_db),
