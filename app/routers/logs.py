@@ -8,6 +8,7 @@ from app.database import get_db
 from app.middleware.rate_limiter import limiter
 from app.models.log_entry import LogLevel
 from app.schemas.log_entry import LogEntryCreate, LogEntryResponse
+from app.services.anomaly_service import run_anomaly_check
 from app.services.log_service import (
     create_log_entries_bulk,
     create_log_entry,
@@ -30,8 +31,15 @@ async def ingest_logs(
     db: AsyncSession = Depends(get_db),
 ):
     if isinstance(payload, list):
-        return await create_log_entries_bulk(db, payload)
-    return await create_log_entry(db, payload)
+        result = await create_log_entries_bulk(db, payload)
+        # trigger detection for each distinct service in the batch
+        for svc in {item.service_name for item in payload}:
+            await run_anomaly_check(db, svc)
+        return result
+
+    entry = await create_log_entry(db, payload)
+    await run_anomaly_check(db, payload.service_name)
+    return entry
 
 
 @router.get("", response_model=list[LogEntryResponse])

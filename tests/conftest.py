@@ -5,8 +5,18 @@ import os
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("ANTHROPIC_API_KEY", "sk-ant-test")
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from httpx import ASGITransport, AsyncClient
+
+
+@pytest.fixture(autouse=True)
+def mock_anomaly_check():
+    """Suppress DB-hitting anomaly check in all ingest tests by default."""
+    with patch("app.routers.logs.run_anomaly_check", new_callable=AsyncMock) as m:
+        m.return_value = None
+        yield m
 
 
 @pytest.fixture(autouse=True)

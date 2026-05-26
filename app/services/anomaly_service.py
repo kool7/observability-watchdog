@@ -1,0 +1,73 @@
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from typing import TYPE_CHECKING
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.anomaly import Anomaly
+from app.models.log_entry import LogLevel
+
+if TYPE_CHECKING:
+    from app.services.anomaly_detector import AnomalyResult
+
+_DETECTOR_Z_THRESHOLD = 2.0
+_DETECTOR_WINDOW_MINUTES = 5
+_DETECTOR_LOOKBACK_HOURS = 1
+
+
+async def save_anomaly(db: AsyncSession, result: AnomalyResult) -> Anomaly:
+    anomaly = Anomaly(
+        service_name=result.service_name,
+        detected_at=result.detected_at,
+        window_start=result.window_start,
+        window_end=result.window_end,
+        error_count=result.error_count,
+        z_score=result.z_score,
+        threshold_breached=result.threshold_breached,
+        severity=result.severity,
+        webhook_fired=False,
+    )
+    db.add(anomaly)
+    await db.commit()
+    await db.refresh(anomaly)
+    return anomaly
+
+
+async def run_anomaly_check(db: AsyncSession, service_name: str) -> Anomaly | None:
+    """Fetch recent ERROR timestamps for service and run Z-score detection."""
+    from app.services.anomaly_detector import ZScoreDetector
+
+    detector = ZScoreDetector(
+        window_minutes=_DETECTOR_WINDOW_MINUTES,
+        z_threshold=_DETECTOR_Z_THRESHOLD,
+        lookback_hours=_DETECTOR_LOOKBACK_HOURS,
+    )
+
+    from datetime import timedelta
+
+    from sqlalchemy import and_
+
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(hours=_DETECTOR_LOOKBACK_HOURS)
+
+    # We need ERROR log timestamps — query log_entries
+    from sqlalchemy import select
+
+    from app.models.log_entry import LogEntry
+
+    log_stmt = select(LogEntry.timestamp).where(
+        and_(
+            LogEntry.service_name == service_name,
+            LogEntry.level == LogLevel.ERROR,
+            LogEntry.timestamp >= cutoff,
+        )
+    )
+    result = await db.execute(log_stmt)
+    error_timestamps = list(result.scalars().all())
+
+    detection = detector.analyze(service_name, error_timestamps, at=now)
+    if detection is None:
+        return None
+
+    return await save_anomaly(db, detection)
