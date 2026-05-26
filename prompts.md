@@ -236,6 +236,14 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
+## Turn 31 — Task 8 Review: TrendBucket Simplification + /code-simplify
+
+**Timestamp:** 2026-05-27
+
+"this might be right time to use /code-simplify if needed also added review comment might wanna check it. The github mcp uses graphQL and yes you can resolve the comment try because that is what we have been doing. Also you haven't reason on this from my previous comment 'this might be right time to use /code-simplify' prompt.md not updated. I am seeing you tend to forget things the moment context window is filled and /compact is run tell me upfront the moment window reached 80% limit so important instructions can be carried forward."
+
+---
+
 ## Turn 30 — Task 8: Health Trends Endpoint
 
 **Timestamp:** 2026-05-27
