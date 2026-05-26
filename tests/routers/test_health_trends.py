@@ -3,6 +3,7 @@
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, patch
 
+import pytest
 from httpx import ASGITransport, AsyncClient
 
 from app.main import app
@@ -138,34 +139,19 @@ class TestHealthTrends:
 
         assert resp.json() == []
 
-    async def test_hours_zero_returns_422(self):
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "/health/trends?hours=0",
+            "/health/trends?hours=-1",
+            "/health/trends?hours=169",
+            "/health/trends?service_name=",
+        ],
+    )
+    async def test_invalid_params_return_422(self, url):
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
-            resp = await client.get("/health/trends?hours=0")
-
-        assert resp.status_code == 422
-
-    async def test_hours_negative_returns_422(self):
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            resp = await client.get("/health/trends?hours=-1")
-
-        assert resp.status_code == 422
-
-    async def test_hours_above_max_returns_422(self):
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            resp = await client.get("/health/trends?hours=169")
-
-        assert resp.status_code == 422
-
-    async def test_empty_service_name_returns_422(self):
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            resp = await client.get("/health/trends?service_name=")
+            resp = await client.get(url)
 
         assert resp.status_code == 422
