@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from uuid import UUID
 
@@ -8,6 +9,7 @@ from app.database import get_db
 from app.middleware.rate_limiter import limiter
 from app.models.log_entry import LogLevel
 from app.schemas.log_entry import LogEntryCreate, LogEntryResponse
+from app.services.anomaly_service import run_anomaly_check
 from app.services.log_service import (
     create_log_entries_bulk,
     create_log_entry,
@@ -15,6 +17,7 @@ from app.services.log_service import (
     list_log_entries,
 )
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/logs", tags=["logs"])
 
 
@@ -30,8 +33,20 @@ async def ingest_logs(
     db: AsyncSession = Depends(get_db),
 ):
     if isinstance(payload, list):
-        return await create_log_entries_bulk(db, payload)
-    return await create_log_entry(db, payload)
+        result = await create_log_entries_bulk(db, payload)
+        for svc in {item.service_name for item in payload}:
+            try:
+                await run_anomaly_check(db, svc)
+            except Exception:
+                logger.exception("anomaly check failed for service %s", svc)
+        return result
+
+    entry = await create_log_entry(db, payload)
+    try:
+        await run_anomaly_check(db, payload.service_name)
+    except Exception:
+        logger.exception("anomaly check failed for service %s", payload.service_name)
+    return entry
 
 
 @router.get("", response_model=list[LogEntryResponse])

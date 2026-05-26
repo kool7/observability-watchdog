@@ -147,6 +147,15 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
+## Turn 19 — Tasks Marked + Task 5 Anomaly Detector
+**Timestamp:** 2026-05-26
+
+"merged let's proceed ahead with next task in line. I can see you are not marking todo's properly check the work that has been done mark task and start new task please."
+
+[Marked tasks 2, 3, 4 completed. Started Task 5. Built ZScoreDetector with 5-min rolling windows, Z>2.0 threshold, 1h lookback, severity mapping LOW/MEDIUM/HIGH/CRITICAL. Added save_anomaly and run_anomaly_check service. Wired detection into POST /logs/ingest. Added autouse mock_anomaly_check fixture to conftest so existing tests don't hit DB. 49 tests pass at 83% coverage. All lints clean.]
+
+---
+
 ## Turn 18 — Task 4 Completion + Code Review Fixes
 **Timestamp:** 2026-05-26
 
