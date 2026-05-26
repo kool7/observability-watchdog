@@ -1,12 +1,12 @@
 """Streamlit dashboard — Observability Watchdog."""
 
 import os
-import time
 from datetime import datetime, timezone
 
 import pandas as pd
 import requests
 import streamlit as st
+import streamlit.components.v1 as components
 
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 REFRESH_INTERVAL = 10  # seconds
@@ -89,7 +89,7 @@ webhook_df = fetch_webhook_events()
 total_errors = int(trends_df["error_count"].sum()) if not trends_df.empty else 0
 total_anomalies = len(anomalies_df)
 webhooks_fired = (
-    int((webhook_df["response_status"] // 100 == 2).sum())
+    int(webhook_df["response_status"].between(200, 299).sum())
     if not webhook_df.empty
     else 0
 )
@@ -246,8 +246,11 @@ else:
     )
 
 # ---------------------------------------------------------------------------
-# Auto-refresh
+# Auto-refresh — JS-based page reload avoids blocking server threads
 # ---------------------------------------------------------------------------
 
-time.sleep(REFRESH_INTERVAL)
-st.rerun()
+_ms = REFRESH_INTERVAL * 1000
+components.html(
+    f"<script>setTimeout(() => window.location.reload(), {_ms});</script>",
+    height=0,
+)
