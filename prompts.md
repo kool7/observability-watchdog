@@ -144,3 +144,10 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 **Timestamp:** 2026-05-26
 
 "CI is still failing E   ModuleNotFoundError: No module named 'psycopg2' how come this is left we have step defined to install deps needed."
+
+---
+
+## Turn 18 — Task 4 Completion + Code Review Fixes
+**Timestamp:** 2026-05-26
+
+[Session resumed from context compaction — continuing Task 4 log ingestion. Ran black, full test suite passed 30/30. Spawned code-reviewer agent. Reviewer found: LIMIT applied before WHERE filters, no MAX_LIMIT cap, level: str on GET /logs bypasses enum validation, batch ingest doing N sequential commits, _storage.reset() accessing private state without guard, burst test not asserting first 10 succeed, missing limit/since/until/invalid-UUID test coverage. Fixed all critical and major findings: filters applied before LIMIT + MAX_LIMIT=1000, level: LogLevel on GET /logs returns 422 on invalid, create_log_entries_bulk with single transaction, conftest guard on _storage, burst test asserts count(201)>=10, added 5 new test cases, suppressed slowapi mypy false positive. 35 tests pass at 85% coverage, all lints clean. Awaiting architect approval to push and create PR #4.]
