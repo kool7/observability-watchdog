@@ -2,29 +2,20 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import BigInteger, case, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.log_entry import LogEntry, LogLevel
-
-
-@dataclass
-class TrendBucket:
-    bucket: datetime
-    service_name: str
-    error_count: int
-    warn_count: int
-    info_count: int
+from app.schemas.trends import TrendBucketResponse
 
 
 async def get_log_trends(
     db: AsyncSession,
     hours: int = 6,
     service_name: str | None = None,
-) -> list[TrendBucket]:
+) -> list[TrendBucketResponse]:
     """Return per-service error/warn/info counts in 5-minute buckets."""
     cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
 
@@ -57,7 +48,7 @@ async def get_log_trends(
     rows = result.all()
 
     return [
-        TrendBucket(
+        TrendBucketResponse(
             bucket=row.bucket,
             service_name=row.service_name,
             error_count=int(row.error_count),

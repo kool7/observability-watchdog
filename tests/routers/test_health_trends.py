@@ -6,13 +6,13 @@ from unittest.mock import AsyncMock, patch
 from httpx import ASGITransport, AsyncClient
 
 from app.main import app
-from app.services.trends_service import TrendBucket
+from app.schemas.trends import TrendBucketResponse
 
 
 def _make_bucket(
     service_name="auth-service", error_count=5, warn_count=2, info_count=10
 ):
-    return TrendBucket(
+    return TrendBucketResponse(
         bucket=datetime.now(timezone.utc).replace(second=0, microsecond=0),
         service_name=service_name,
         error_count=error_count,
