@@ -33,11 +33,22 @@ python scripts/generate_logs.py
 ## Workflow (must follow every task, no exceptions)
 - tasks/todo.md updated at START and END of every task
 - Run code-reviewer agent before every PR — never skip
+- After ANY code change from review comments: re-run tests AND run code-reviewer again
 - Run /code-simplify after every PR code review pass
 - Resolve GitHub PR review threads via `gh api graphql` resolveReviewThread mutation
 - PR prefix: OW (always — derived from project name Observability Watchdog)
 - Never add "Co-Authored-By: Claude" line in commit messages
 - Push to GitHub only after explicit user approval
+
+## Frontend / Dashboard Testing
+- Always test dashboard/UI changes with Playwright MCP (mcp__plugin_playwright_playwright__*)
+- Do NOT use Chrome DevTools MCP for UI testing — use Playwright MCP exclusively
+- Playwright test sequence for dashboard:
+  1. Start FastAPI: `uvicorn app.main:app --port 8000` (background)
+  2. Start Streamlit: `streamlit run dashboard/app.py --server.port 8501` (background)
+  3. Navigate to http://localhost:8501, take screenshot, verify all 5 sections render
+  4. Test error states: stop API, reload, confirm graceful empty states show
+  5. After Playwright tests pass → run code-reviewer → only then create PR
 
 ## Context Window
 - Warn user proactively when context approaches ~80% capacity
