@@ -108,4 +108,25 @@ Acknowledge and let's start."
 
 ---
 
+## Turn 14 — CI Failing + Pre-commit + Plugin Compliance
+**Timestamp:** 2026-05-26
+
+"ci failing for the CI does looks unusual to me also please add husky prebuild so that lint issues are not there on ci. I didn't see the test and review steps from plugin again? why?"
+
+---
+
 _[From here on: every prompt logged exactly as typed — no corrections, no rewrites.]_
+
+---
+
+## Turn 15 — Merge PR #2, Proceed, Plugin Compliance
+**Timestamp:** 2026-05-26
+
+"merged proceed with next task, also make sure we are not missing nay steps in CI. I do not see unit test added for feature if we would followed the instruction I gave and plugin suggested we would have been having lot more tests. PFR is merged move with next task I do not wanna see any more issues with instruction not followed."
+
+---
+
+## Turn 16 — CI Trigger Pattern + prompts.md Gap
+**Timestamp:** 2026-05-26
+
+"why ci is running on oush and pull? this is unusual pattern I am seeing also ci failed. Why prompt.md is not updated at all for above message?"
