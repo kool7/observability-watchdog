@@ -61,6 +61,21 @@ class TestLogEntrySchemas:
         resp = LogEntryResponse.model_validate(FakeORM())
         assert resp.id == uid
         assert resp.service_name == "svc"
+        assert resp.metadata is None
+
+    def test_response_metadata_alias_roundtrip(self):
+        from app.schemas.log_entry import LogEntryResponse
+
+        class FakeORM:
+            id = uuid4()
+            service_name = "svc"
+            level = LogLevel.ERROR
+            message = "err"
+            timestamp = datetime.now(timezone.utc)
+            metadata_ = {"request_id": "abc-123", "region": "us-east-1"}
+
+        resp = LogEntryResponse.model_validate(FakeORM())
+        assert resp.metadata == {"request_id": "abc-123", "region": "us-east-1"}
 
 
 class TestAnomalySchemas:

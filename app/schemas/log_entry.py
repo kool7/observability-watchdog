@@ -15,7 +15,7 @@ class LogEntryCreate(BaseModel):
 
 
 class LogEntryResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
     id: UUID
     service_name: str
@@ -23,5 +23,3 @@ class LogEntryResponse(BaseModel):
     message: str
     timestamp: datetime
     metadata: dict | None = Field(None, alias="metadata_")
-
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
