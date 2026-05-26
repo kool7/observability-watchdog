@@ -236,6 +236,14 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
+## Turn 33 — Task 9: Playwright Testing + Review Comment Rules
+
+**Timestamp:** 2026-05-27
+
+"I told you to use plywright for frontend testing automation and test it yourself, update memoery claude md if needed so that you remember when and where what skill needs to be used the plugin's skill might suggest to use devtools mcp I prefer plywright mcp but before making this decision assess and procced ahead, always make sure that once I give review comment and code changes are done you need to and shall always run test and review steps again."
+
+---
+
 ## Turn 32 — Task 9: Streamlit Dashboard
 
 **Timestamp:** 2026-05-27
