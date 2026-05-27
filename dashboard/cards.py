@@ -412,29 +412,36 @@ def recent_rows_html(
         w_end = (a.get("window_end") or "")[:16].replace("T", " ")
 
         open_attr = " open" if (pre_open_first and len(rows) == 0) else ""
-        rows.append(
-            f"""
-<details class="wd-row"{open_attr}>
-  <summary>
-    <span class="wd-row-dot"
-      style="background:{color};box-shadow:0 0 5px {color}80;"></span>
-    <span class="wd-row-time">{time_str}</span>
-    <span class="wd-row-ago">{ago}</span>
-    <span class="wd-row-service">{_e(a["service_name"])}</span>
-    <span class="wd-row-metric" style="color:{color};">{metric_label}</span>
-    <span class="wd-row-arrow">▶</span>
-  </summary>
-  <div class="wd-row-body">
-    <p class="wd-row-narrative">{narrative}</p>
-    <div class="wd-row-stats">
-      <span>Errors&nbsp;<span class="wd-row-stat-val">{a["error_count"]}</span></span>
-      <span>Baseline&nbsp;<span class="wd-row-stat-val">≈{bl:.1f}</span></span>
-      <span>Webhook&nbsp;<span class="wd-row-stat-val">{webhook}</span></span>
-    </div>
-    <div class="wd-row-window">Window: {w_start} → {w_end} UTC</div>
-  </div>
-</details>"""
+        dot_style = f"background:{color};box-shadow:0 0 5px {color}80;"
+        err_count = a["error_count"]
+        svc = _e(a["service_name"])
+        row = (
+            f'<details class="wd-row"{open_attr}>'
+            f"<summary>"
+            f'<span class="wd-row-dot" style="{dot_style}"></span>'
+            f'<span class="wd-row-time">{time_str}</span>'
+            f'<span class="wd-row-ago">{ago}</span>'
+            f'<span class="wd-row-service">{svc}</span>'
+            f'<span class="wd-row-metric" style="color:{color};">'
+            f"{metric_label}</span>"
+            f'<span class="wd-row-arrow">&#9654;</span>'
+            f"</summary>"
+            f'<div class="wd-row-body">'
+            f'<p class="wd-row-narrative">{narrative}</p>'
+            f'<div class="wd-row-stats">'
+            f'<span>Errors&nbsp;<span class="wd-row-stat-val">'
+            f"{err_count}</span></span>"
+            f'<span>Baseline&nbsp;<span class="wd-row-stat-val">'
+            f"&#x2248;{bl:.1f}</span></span>"
+            f'<span>Webhook&nbsp;<span class="wd-row-stat-val">'
+            f"{webhook}</span></span>"
+            f"</div>"
+            f'<div class="wd-row-window">'
+            f"Window: {w_start} &#8594; {w_end} UTC</div>"
+            f"</div>"
+            f"</details>"
         )
+        rows.append(row)
 
     count = len(anomalies)
     return f"""
