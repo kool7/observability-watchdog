@@ -448,6 +448,14 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
+## Turn 54 — Session Resume: Code Review Fixes + PR OW-14
+
+**Timestamp:** 2026-05-27
+
+[Session resumed after context compaction. Code-reviewer agent returned findings on Task 14 dashboard rewrite. Architect instruction: fix critical issues (XSS, dead schema fields) and raise PR OW-14.]
+
+---
+
 ## Turn 51 — Dashboard Redesign: Minimal Handoff Review
 
 **Timestamp:** 2026-05-27

@@ -21,5 +21,3 @@ class AnomalyResponse(BaseModel):
     severity: Severity
     webhook_fired: bool
     baseline_mean: float | None = None
-    top_errors: list[dict] = []
-    trend_direction: str | None = None

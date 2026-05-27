@@ -23,7 +23,6 @@ class AnomalyResult:
     threshold_breached: float
     severity: Severity
     baseline_mean: float = 0.0
-    trend_direction: str | None = None
 
 
 def metric_readings(error_count: int, baseline_mean: float, z_score: float) -> dict:
@@ -120,14 +119,6 @@ class ZScoreDetector:
         window_end = at
         window_start = at - window_duration
 
-        prev_count = counts[-2] if len(counts) >= 2 else 0
-        if current_count > prev_count:
-            trend = "rising"
-        elif current_count < prev_count:
-            trend = "recovering"
-        else:
-            trend = "flat"
-
         return AnomalyResult(
             service_name=service_name,
             detected_at=datetime.now(timezone.utc),
@@ -138,5 +129,4 @@ class ZScoreDetector:
             threshold_breached=self.z_threshold,
             severity=_classify_severity(z),
             baseline_mean=round(mean, 4),
-            trend_direction=trend,
         )

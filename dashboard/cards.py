@@ -2,7 +2,13 @@
 
 from __future__ import annotations
 
+import html as _html
 from datetime import datetime, timezone
+
+
+def _e(s: object) -> str:
+    """HTML-escape any value before interpolating into markup."""
+    return _html.escape(str(s))
 
 
 def _relative_time(iso: str) -> str:
@@ -302,7 +308,7 @@ def hero_html(
         '<div class="wd-metric-cap">standard deviations above baseline</div>',
     }.get(metric_style, "")
 
-    first_sentence = (anomaly.get("ai_narrative") or "").split(".")[0]
+    first_sentence = _e((anomaly.get("ai_narrative") or "").split(".")[0])
     if first_sentence:
         first_sentence += "."
 
@@ -312,7 +318,7 @@ def hero_html(
     <span class="wd-pulse"></span>
     <span class="wd-incident-label">Active Incident</span>
   </div>
-  <div class="wd-service">{anomaly["service_name"]}</div>
+  <div class="wd-service">{_e(anomaly["service_name"])}</div>
   {metric_html}
   <p class="wd-ai-summary">{first_sentence}</p>
   <span class="wd-cta">Investigate →</span>
@@ -373,7 +379,7 @@ def recent_rows_html(anomalies: list[dict], metric_style: str = "multiplier") ->
       style="background:{color};box-shadow:0 0 5px {color}80;"></span>
     <span class="wd-row-time">{time_str}</span>
     <span class="wd-row-ago">{ago}</span>
-    <span class="wd-row-service">{a["service_name"]}</span>
+    <span class="wd-row-service">{_e(a["service_name"])}</span>
     <span class="wd-row-metric" style="color:{color};">{metric_label}</span>
     <span class="wd-row-arrow">▶</span>
   </summary>

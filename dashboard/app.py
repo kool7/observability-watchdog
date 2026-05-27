@@ -13,6 +13,8 @@ from cards import header_html, hero_html, recent_rows_html
 from streamlit_autorefresh import st_autorefresh
 
 
+# Local copy — importing from app.* pulls in SQLAlchemy/asyncpg, breaking Streamlit's
+# process model. Keep in sync with anomaly_detector.py manually.
 def metric_readings(error_count: int, baseline_mean: float, z_score: float) -> dict:
     baseline = max(baseline_mean, 0.4)
     multiplier = error_count / baseline
@@ -104,7 +106,11 @@ active = next(
 active_readings = (
     metric_readings(
         error_count=active["error_count"],
-        baseline_mean=active.get("baseline_mean") or 0.4,
+        baseline_mean=(
+            active.get("baseline_mean")
+            if active.get("baseline_mean") is not None
+            else 0.4
+        ),
         z_score=active["z_score"],
     )
     if active
@@ -128,7 +134,7 @@ if show_chart and not trends_df.empty:
     anomaly_times = pd.DataFrame(
         [
             {
-                "bucket": pd.Timestamp(a["detected_at"], tz="UTC"),
+                "bucket": pd.to_datetime(a["detected_at"], utc=True),
                 "error_count": a["error_count"],
             }
             for a in anomalies
