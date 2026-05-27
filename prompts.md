@@ -484,6 +484,16 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
+## Turn 60 — README + ARCHITECTURE Update + Submission PDF
+
+**Timestamp:** 2026-05-28
+
+"I have added assets folder I want you to update readme and architecture docs if needed properly I added a gif I recorded the working of the dash and created gif so that can be added in readme and folks can expect what to see. also I want you to prepare a pdf for me with all the details they asked me to add in it. Final Submission Checklist: Tagle.ai Tag output summary included. Public GitHub Repository link. prompts.md file link. AI-generated Presentation Deck (PPT or Markdown solution)."
+
+[User provided: assets/demo.gif added. Tagle.ai profile screenshots (The Architect type, Kuldeep Singh Chouhan, dimensions chart). GitHub public repo: https://github.com/kool7/observability-watchdog. prompts.md link: https://github.com/kool7/observability-watchdog/blob/main/prompts.md. Architecture link: https://github.com/kool7/observability-watchdog/blob/main/ARCHITECTURE.md.]
+
+---
+
 ## Turn 59 — Chart: Fix Squiggly Line + Altair Toolbar Blocking Last Dot
 
 **Timestamp:** 2026-05-27
