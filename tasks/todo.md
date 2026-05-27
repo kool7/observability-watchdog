@@ -54,4 +54,4 @@
 - tasks/todo.md updated at START and END of every task (before creating PR)
 
 ## Phase 10: Dashboard Redesign
-- [~] Task 14 (M): Minimal dashboard rewrite — hero + sparkline + expander timeline (handoff.md) [IN PROGRESS]
+- [x] Task 14 (M): Minimal dashboard rewrite — hero + sparkline + expander timeline (handoff.md)
