@@ -6,6 +6,7 @@
 > **Timer Started:** 2026-05-26
 > **Goal:** MVP in 4-6 hours (Max window: 16h)
 
+
 ---
 
 ## Turn 1 — Required Initial Execution Prompt
@@ -109,10 +110,6 @@ Acknowledge and let's start."
 **Timestamp:** 2026-05-26
 
 "looks good for now we will refine it later once work is done."
-
----
-
-_[From here on: every prompt logged exactly as typed — no corrections, no rewrites.]_
 
 ---
 
@@ -334,14 +331,6 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
-## Turn 41 — Task 10 Merged, Proceed to Task 11
-
-**Timestamp:** 2026-05-27
-
-"The pR looks good, It is merged to main. Let's proceed with next task."
-
----
-
 ## Turn 40 — prompts.md Still Not Audited
 
 **Timestamp:** 2026-05-27
@@ -430,13 +419,13 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
-## Turn 53 — Dashboard Visual Gap vs Design
+## Turn 51 — Dashboard Redesign: Minimal Handoff Review
 
 **Timestamp:** 2026-05-27
 
-"The UI is very odd is it cause of streamlit? [Image #18] this si what design has [Image #19] this is what I see which looks reallybad"
+"I used claude design because I was not pleased with design but even this design is way too much for any user to understand the dashboard. please follow minimal folder docs and only check detiled ones if needed that's way too much info for this initial assessment which I do not want to use to buildthe dash. could you please assess and let me know your plan and what you understood after going through handoff.mf also do not forget to make use of the agent skill plugin and use it to best of it scapability as we had used it so far and also make sure to update plan spec tasks if needed and prompt.md as well."
 
-[Images: design shows clean custom-HTML Recent rows with colored dots, relative timestamps "Xm ago", monospace service names, right-aligned red "75× normal". Our version shows blocky Streamlit expander boxes with full ISO timestamps and no styling. Hero card looks good but Streamlit toolbar (Deploy button) is visible.]
+[Images shared: Claude design prototype screenshots — Overview tab (dark theme, nav bar, KPI cards, active incident panel, service health, error rate chart) and second screen (detailed version with more panels). User says both are too complex.]
 
 ---
 
@@ -448,11 +437,21 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
-## Turn 56 — Close Running Processes + prompts.md Audit
+## Turn 53 — Dashboard Visual Gap vs Design
 
 **Timestamp:** 2026-05-27
 
-"update prompt.md if streamlit or api instance running on those ports close them do not add this in promo.md but above ones shall be if not"
+"The UI is very odd is it cause of streamlit? [Image #18] this si what design has [Image #19] this is what I see which looks reallybad"
+
+[Images: design shows clean custom-HTML Recent rows with colored dots, relative timestamps "Xm ago", monospace service names, right-aligned red "75× normal". Our version shows blocky Streamlit expander boxes with full ISO timestamps and no styling. Hero card looks good but Streamlit toolbar (Deploy button) is visible.]
+
+---
+
+## Turn 54 — Session Resume: Code Review Fixes + PR OW-14
+
+**Timestamp:** 2026-05-27
+
+[Session resumed after context compaction. Code-reviewer agent returned findings on Task 14 dashboard rewrite. Architect instruction: fix critical issues (XSS, dead schema fields) and raise PR OW-14.]
 
 ---
 
@@ -466,45 +465,27 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
-## Turn 54 — Session Resume: Code Review Fixes + PR OW-14
+## Turn 56 — Close Running Processes + prompts.md Audit
 
 **Timestamp:** 2026-05-27
 
-[Session resumed after context compaction. Code-reviewer agent returned findings on Task 14 dashboard rewrite. Architect instruction: fix critical issues (XSS, dead schema fields) and raise PR OW-14.]
+"update prompt.md if streamlit or api instance running on those ports close them do not add this in promo.md but above ones shall be if not"
 
 ---
 
-## Turn 51 — Dashboard Redesign: Minimal Handoff Review
+## Turn 57 — Layout Fixes: Chart Above Recent, Spacing, Footer, Chart Labels
 
 **Timestamp:** 2026-05-27
 
-"I used claude design because I was not pleased with design but even this design is way too much for any user to understand the dashboard. please follow minimal folder docs and only check detiled ones if needed that's way too much info for this initial assessment which I do not want to use to buildthe dash. could you please assess and let me know your plan and what you understood after going through handoff.mf also do not forget to make use of the agent skill plugin and use it to best of it scapability as we had used it so far and also make sure to update plan spec tasks if needed and prompt.md as well."
+"Also the chart placement is in middle and three sections are quite spacy in design. [Image #23] even after sharing those jsx why so many issues? please check the jsx files properly if needed. there are three more jsx in detailed folder those might give you some more idea to adjust the ui."
 
-[Images shared: Claude design prototype screenshots — Overview tab (dark theme, nav bar, KPI cards, active incident panel, service health, error rate chart) and second screen (detailed version with more panels). User says both are too complex.]
+[Image #23: desired layout — Header (Watchdog + live clock + tweaks icon, tight row). Chart section ("LAST 6 HOURS · PAYMENT-SERVICE" left + "peak 30 errors / 5 min" right labels, white sparkline + red anomaly dots). Recent section (3 events, tight rows with dot + time + ago + service + metric + chevron). Footer (WATCHDOG left, "api → http://localhost:8000" right). No KPI cards, no tabs, no sidebar. Very tight vertical spacing.]
 
----
-
-## Turn 60 — README + ARCHITECTURE Update + Submission PDF
-
-**Timestamp:** 2026-05-28
-
-"I have added assets folder I want you to update readme and architecture docs if needed properly I added a gif I recorded the working of the dash and created gif so that can be added in readme and folks can expect what to see. also I want you to prepare a pdf for me with all the details they asked me to add in it. Final Submission Checklist: Tagle.ai Tag output summary included. Public GitHub Repository link. prompts.md file link. AI-generated Presentation Deck (PPT or Markdown solution)."
-
-[User provided: assets/demo.gif added. Tagle.ai profile screenshots (The Architect type, Kuldeep Singh Chouhan, dimensions chart). GitHub public repo: https://github.com/kool7/observability-watchdog. prompts.md link: https://github.com/kool7/observability-watchdog/blob/main/prompts.md. Architecture link: https://github.com/kool7/observability-watchdog/blob/main/ARCHITECTURE.md.]
-
----
-
-## Turn 59 — Chart: Fix Squiggly Line + Altair Toolbar Blocking Last Dot
-
-**Timestamp:** 2026-05-27
-
-"why line is squiggly, not able to click on last observation [Image #2] check this image [Image #3]"
-
-[Image #2: chart shows squiggly/wavy artifact at bottom-left baseline — monotone cubic spline overshoots near sparse zero-value points. Image #3: hovering reveals Altair toolbar (table icon, fullscreen, "..." with "Click to view") overlapping the right-most anomaly red dot, making it inaccessible.]
-
-Fixes:
-1. interpolate "monotone" → "linear" (no overshoot; 288 buckets look smooth with linear)
-2. Add usermeta={"embedOptions": {"actions": False}} to hide Altair toolbar on hover
+Issues to fix from minimal/app.jsx reference:
+1. Chart must come BEFORE Recent section (hero → chart → recent → footer)
+2. Chart needs context labels: left = "LAST 24 HOURS · service", right = "peak N errors / 5 min"
+3. Footer: "WATCHDOG" left, "api → API_URL" right
+4. Reduce excessive padding/margins between all sections
 
 ---
 
@@ -527,18 +508,38 @@ Fixes needed:
 
 ---
 
-## Turn 57 — Layout Fixes: Chart Above Recent, Spacing, Footer, Chart Labels
+## Turn 59 — Chart: Fix Squiggly Line + Altair Toolbar Blocking Last Dot
 
 **Timestamp:** 2026-05-27
 
-"Also the chart placement is in middle and three sections are quite spacy in design. [Image #23] even after sharing those jsx why so many issues? please check the jsx files properly if needed. there are three more jsx in detailed folder those might give you some more idea to adjust the ui."
+"why line is squiggly, not able to click on last observation [Image #2] check this image [Image #3]"
 
-[Image #23: desired layout — Header (Watchdog + live clock + tweaks icon, tight row). Chart section ("LAST 6 HOURS · PAYMENT-SERVICE" left + "peak 30 errors / 5 min" right labels, white sparkline + red anomaly dots). Recent section (3 events, tight rows with dot + time + ago + service + metric + chevron). Footer (WATCHDOG left, "api → http://localhost:8000" right). No KPI cards, no tabs, no sidebar. Very tight vertical spacing.]
+[Image #2: chart shows squiggly/wavy artifact at bottom-left baseline — monotone cubic spline overshoots near sparse zero-value points. Image #3: hovering reveals Altair toolbar (table icon, fullscreen, "..." with "Click to view") overlapping the right-most anomaly red dot, making it inaccessible.]
 
-Issues to fix from minimal/app.jsx reference:
-1. Chart must come BEFORE Recent section (hero → chart → recent → footer)
-2. Chart needs context labels: left = "LAST 24 HOURS · service", right = "peak N errors / 5 min"
-3. Footer: "WATCHDOG" left, "api → API_URL" right
-4. Reduce excessive padding/margins between all sections
+Fixes:
+1. interpolate "monotone" → "linear" (no overshoot; 288 buckets look smooth with linear)
+2. Add usermeta={"embedOptions": {"actions": False}} to hide Altair toolbar on hover
+
+---
+
+## Turn 60 — README + ARCHITECTURE Update + Submission PDF
+
+**Timestamp:** 2026-05-28
+
+"I have added assets folder I want you to update readme and architecture docs if needed properly I added a gif I recorded the working of the dash and created gif so that can be added in readme and folks can expect what to see. also I want you to prepare a pdf for me with all the details they asked me to add in it. Final Submission Checklist: Tagle.ai Tag output summary included. Public GitHub Repository link. prompts.md file link. AI-generated Presentation Deck (PPT or Markdown solution)."
+
+[User provided: assets/demo.gif added. Tagle.ai profile screenshots (The Architect type, Kuldeep Singh Chouhan, dimensions chart). GitHub public repo: https://github.com/kool7/observability-watchdog. prompts.md link: https://github.com/kool7/observability-watchdog/blob/main/prompts.md. Architecture link: https://github.com/kool7/observability-watchdog/blob/main/ARCHITECTURE.md.]
+
+---
+
+_[From here on: every prompt logged exactly as typed — no corrections, no rewrites.]_
+
+---
+
+## Turn 61 — Fix prompts.md order, gitignore submission.pdf, commit handoff.md
+
+**Timestamp:** 2026-05-28
+
+"lol prompt.md file I can see many prompts are in unordered manner you were supposed to maintain a record in chronological order with latest message at bottom. avoid adding submission pdf as part of repo and add that in gitignore please if committed remove it. must have asked me before pushing code can see handoff.md why it is not committed"
 
 ---
