@@ -30,6 +30,7 @@
 
 ## Phase 6: Dashboard
 - [x] Task 9 (M): Streamlit dashboard — 5 charts, 10s auto-refresh
+- [x] Task 10 (S): Synthetic log generator script with spike simulation
 
 ## Checkpoint 5: Full MVP working — run generate_logs.py, dashboard shows all data
 
