@@ -484,6 +484,25 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
+## Turn 58 — Chart: Taller Height + Smooth Line
+
+**Timestamp:** 2026-05-27
+
+"The graph height is small [Image #1] neither is it looks smooth as I see it in design doc"
+
+[Image shows design doc chart: tall (~180px), smooth white curved line, subtle area fill under the line, only start+end time labels on x-axis (no gridlines, no y-axis), glowing red anomaly dots.]
+
+Fixes needed:
+- height 100 → 180px
+- interpolate="monotone" for smooth curve
+- line color white/near-white (#c8d0df), not blue
+- add subtle area fill (opacity ~0.05) under line
+- remove y-axis entirely
+- remove gridlines
+- x-axis: only 2 tick labels (start + end time), no domain line, no ticks
+
+---
+
 ## Turn 57 — Layout Fixes: Chart Above Recent, Spacing, Footer, Chart Labels
 
 **Timestamp:** 2026-05-27

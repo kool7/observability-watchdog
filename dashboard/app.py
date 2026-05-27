@@ -169,6 +169,37 @@ if show_chart and not trends_df.empty:
     focus_service = active["service_name"] if active else None
     st.html(chart_header_html(focus_service, peak))
 
+    x_enc = alt.X(
+        "bucket:T",
+        axis=alt.Axis(
+            title=None,
+            labelAngle=0,
+            tickCount=2,
+            grid=False,
+            domain=False,
+            ticks=False,
+            labelColor="#6b7a94",
+            labelFont="JetBrains Mono, monospace",
+            labelFontSize=10,
+        ),
+    )
+    y_enc = alt.Y(
+        "error_count:Q",
+        axis=None,
+        scale=alt.Scale(zero=True),
+    )
+
+    area = (
+        alt.Chart(agg)
+        .mark_area(color="#c8d0df", opacity=0.06, interpolate="monotone")
+        .encode(x=x_enc, y=y_enc)
+    )
+    line = (
+        alt.Chart(agg)
+        .mark_line(color="#c8d0df", strokeWidth=1.6, interpolate="monotone")
+        .encode(x=x_enc, y=y_enc)
+    )
+
     anomaly_times = pd.DataFrame(
         [
             {
@@ -180,32 +211,25 @@ if show_chart and not trends_df.empty:
         ]
     )
 
-    line = (
-        alt.Chart(agg)
-        .mark_line(color="#5B8FB0", strokeWidth=1.5)
-        .encode(
-            x=alt.X(
-                "bucket:T",
-                axis=alt.Axis(title=None, labelAngle=-30, tickCount=6),
-            ),
-            y=alt.Y("error_count:Q", axis=alt.Axis(title=None, tickCount=4)),
-        )
-        .properties(height=100)
-    )
-
-    chart = line
+    layers = [area, line]
     if not anomaly_times.empty:
         dots = (
             alt.Chart(anomaly_times)
-            .mark_point(color="#e05555", size=80, filled=True)
+            .mark_point(color="#e05555", size=120, filled=True, opacity=0.9)
             .encode(
                 x=alt.X("bucket:T"),
                 y=alt.Y("error_count:Q"),
                 tooltip=["bucket:T", "error_count:Q"],
             )
         )
-        chart = line + dots
+        layers.append(dots)
 
+    chart = (
+        alt.layer(*layers)
+        .properties(height=170)
+        .configure_view(strokeWidth=0, fill="transparent")
+        .configure_axis(grid=False)
+    )
     st.altair_chart(chart, use_container_width=True)
 
 # ---------------------------------------------------------------------------
