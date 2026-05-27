@@ -91,14 +91,16 @@ class TestCreateLogEntriesBulk:
         assert len(added) == 3
         db.commit.assert_awaited_once()
 
-    async def test_refreshes_each_entry(self):
+    async def test_no_refresh_after_bulk_insert(self):
+        # expire_on_commit=False makes individual refresh calls unnecessary;
+        # skipping them avoids N round-trips to the DB after a bulk insert.
         from app.services.log_service import create_log_entries_bulk
 
         db = _make_db()
         schemas = [_make_schema() for _ in range(2)]
         await create_log_entries_bulk(db, schemas)
 
-        assert db.refresh.await_count == 2
+        db.refresh.assert_not_awaited()
 
     async def test_empty_list_returns_empty(self):
         from app.services.log_service import create_log_entries_bulk

@@ -1,3 +1,5 @@
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
+
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -16,13 +18,22 @@ class Settings(BaseSettings):
     @field_validator("database_url")
     @classmethod
     def ensure_asyncpg_driver(cls, v: str) -> str:
-        # Neon and most Postgres providers give postgresql:// or postgres://
-        # SQLAlchemy async requires postgresql+asyncpg://
+        # Normalise scheme for SQLAlchemy async
         if v.startswith("postgres://"):
-            return v.replace("postgres://", "postgresql+asyncpg://", 1)
-        if v.startswith("postgresql://"):
-            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
-        return v
+            v = v.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif v.startswith("postgresql://"):
+            v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+        # asyncpg rejects psycopg2-style sslmode / channel_binding params.
+        # Replace sslmode=require with ssl=require (asyncpg-native).
+        parsed = urlparse(v)
+        params = {k: vals[0] for k, vals in parse_qs(parsed.query).items()}
+        ssl_mode = params.pop("sslmode", None)
+        params.pop("channel_binding", None)
+        if ssl_mode == "require":
+            params["ssl"] = "require"
+        clean_query = urlencode(params)
+        return urlunparse(parsed._replace(query=clean_query))
 
 
 settings = Settings()

@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 import pandas as pd
 import requests
 import streamlit as st
-import streamlit.components.v1 as components
 
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 REFRESH_INTERVAL = 10  # seconds
@@ -164,7 +163,7 @@ else:
         ]
         .sort_values("error_rate_%", ascending=False)
         .reset_index(drop=True),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
 
@@ -211,7 +210,7 @@ with col_left:
             ]
             st.dataframe(
                 display.reset_index(drop=True),
-                use_container_width=True,
+                width="stretch",
                 hide_index=True,
             )
 
@@ -255,11 +254,8 @@ else:
     )
 
 # ---------------------------------------------------------------------------
-# Auto-refresh — JS-based page reload avoids blocking server threads
+# Auto-refresh — st.html injects JS without blocking server threads
 # ---------------------------------------------------------------------------
 
 _ms = REFRESH_INTERVAL * 1000
-components.html(
-    f"<script>setTimeout(() => window.location.reload(), {_ms});</script>",
-    height=0,
-)
+st.html(f"<script>setTimeout(() => window.location.reload(), {_ms});</script>")

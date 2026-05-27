@@ -152,7 +152,7 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 **Timestamp:** 2026-05-26
 
-"CI is still failing E   ModuleNotFoundError: No module named 'psycopg2' how come this is left we have step defined to install deps needed."
+"CI is still failing E ModuleNotFoundError: No module named 'psycopg2' how come this is left we have step defined to install deps needed."
 
 ---
 
@@ -379,5 +379,53 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 **Timestamp:** 2026-05-27
 
 "is this correct? also the readme skill is not used to its correct potential the readme file you created is created with a template I use for vscode extension cause those are public facing and need to to explain what the product feature extension does. this on the other hand is a service which has to be used by dev please explore the skill and refactor the readme. We need to use table of content and user shall be able to scroll to table cf content and from each section they visit. in many cases I have seen some readme also shows content in this line like tabs user cn click and see the relevant info fast. as part of submission we need to fulfill this so I was thinking a good markdown for architecture would be great [ ] AI-generated Presentation Deck (PPT or Markdown solution explaining the architecture)."
+
+---
+
+## Turn 45 — End-to-End Run Setup, blake2 Fix, DB Migration Fix
+
+**Timestamp:** 2026-05-27
+
+"Now I want to run this end to end test it myself so that I can later on send this to recruiter also. I want readme to show license and architecture here in tab but currently I do not see anything check this image. how can we do so? Also it seems migrations are not ran. Also, the data as source what assumption we are making cause I see we are generating it for sake of testing right."
+
+---
+
+## Turn 46 — Fix blake2 Noise, Rebuild Python Env, Raise Bug-Fix PR
+
+**Timestamp:** 2026-05-27
+
+"no, i will use pyenv to install that specific version if needed you do the needful and ask me for permission wherever needed and build the fresh env I do not want anyone who reviews this code to face the issues. we will raise a PR for these fixes since these are bugs. do not forget to update prompt.md but commit only after I review code locally."
+
+---
+
+## Turn 47 — Log Generator Ctrl+C, Venv Activated
+
+**Timestamp:** 2026-05-27
+
+"Tried running the generate script [traceback showing KeyboardInterrupt after Ctrl+C while script was sending baseline logs successfully]"
+
+---
+
+## Turn 48 — Confirmed blake2 Fixed, Pipeline Running, Logs Inserting
+
+**Timestamp:** 2026-05-27
+
+"I never interrupted while running the script check this out [uvicorn logs showing clean startup without blake2 errors, INSERT INTO log_entries succeeding, anomaly detection SELECT running]"
+
+---
+
+## Turn 49 — Full Pipeline Output, Multiple Bug Reports
+
+**Timestamp:** 2026-05-27
+
+"auto refresh does not seems to work. this service threw 30 error than why we marked it healthy? zscore what it is? what that 30 means? also webhook fired twice but in graph i see spike once only. [generate_logs output showing spike batch failed/timed out, anomalies detected: 2 with z=30.00] also, the dashboard UI is it really that informative or not what we are displaying? what info to show to user? and how to arrange it I can use claude design anyways if enough info is provided to enhance UI later post this analysis"
+
+---
+
+## Turn 50 — Raise Bug-Fix PR
+
+**Timestamp:** 2026-05-27
+
+"Please raise the PR and I hope you are not forgetting to update prompt.md"
 
 ---
