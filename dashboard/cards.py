@@ -162,8 +162,18 @@ _CSS = """
     color: oklch(0.78 0.18 25);
     font-size: 0.85rem;
     font-weight: 600;
+    font-family: inherit;
     text-decoration: none;
-    cursor: default;
+    cursor: pointer;
+  }
+
+  /* Style the native Streamlit Investigate button to match the hero CTA */
+  [data-testid="stButton"][key="investigate"] button,
+  div[data-testid="stButton"] button[kind="secondary"] {
+    background: oklch(0.68 0.20 25 / 0.15) !important;
+    border: 1px solid oklch(0.68 0.20 25 / 0.4) !important;
+    color: oklch(0.78 0.18 25) !important;
+    font-weight: 600 !important;
   }
 
   /* Recent timeline */
@@ -326,28 +336,16 @@ def hero_html(
   <div class="wd-service">{_e(anomaly["service_name"])}</div>
   {metric_html}
   <p class="wd-ai-summary">{first_sentence}</p>
-  <a class="wd-cta" href="#" onclick="
-    try {{
-      var frames = window.parent.document.querySelectorAll('iframe');
-      for (var i = 0; i < frames.length; i++) {{
-        try {{
-          var d = frames[i].contentDocument || frames[i].contentWindow.document;
-          var row = d.querySelector('details.wd-row');
-          if (row) {{
-            row.open = true;
-            row.scrollIntoView({{behavior:'smooth', block:'start'}});
-            break;
-          }}
-        }} catch(e) {{}}
-      }}
-    }} catch(e) {{}}
-    return false;
-  ">Investigate →</a>
+  <span class="wd-cta-placeholder"></span>
 </div>
 """
 
 
-def recent_rows_html(anomalies: list[dict], metric_style: str = "multiplier") -> str:
+def recent_rows_html(
+    anomalies: list[dict],
+    metric_style: str = "multiplier",
+    pre_open_first: bool = False,
+) -> str:
     if not anomalies:
         return (
             '<p style="color:#6b7a94;font-size:0.85rem;margin-top:1rem;">'
@@ -392,9 +390,10 @@ def recent_rows_html(anomalies: list[dict], metric_style: str = "multiplier") ->
         w_start = (a.get("window_start") or "")[:16].replace("T", " ")
         w_end = (a.get("window_end") or "")[:16].replace("T", " ")
 
+        open_attr = " open" if (pre_open_first and len(rows) == 0) else ""
         rows.append(
             f"""
-<details class="wd-row">
+<details class="wd-row"{open_attr}>
   <summary>
     <span class="wd-row-dot"
       style="background:{color};box-shadow:0 0 5px {color}80;"></span>

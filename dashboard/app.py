@@ -63,7 +63,7 @@ def fetch_anomalies(limit: int = 10) -> list[dict]:
     return _get("/anomalies", {"limit": limit}) or []
 
 
-def fetch_trends(hours: int = 6) -> pd.DataFrame:
+def fetch_trends(hours: int = 24) -> pd.DataFrame:
     data = _get("/health/trends", {"hours": hours})
     if not data:
         return pd.DataFrame(columns=["bucket", "service_name", "error_count"])
@@ -82,7 +82,7 @@ active = next(
 )
 
 # ---------------------------------------------------------------------------
-# Header + Hero
+# Header
 # ---------------------------------------------------------------------------
 
 clock = datetime.now(timezone.utc).strftime("%H:%M:%S")
@@ -103,7 +103,7 @@ active_readings = (
 
 st.html(header_html(clock=clock))
 
-# Tweaks popover — rendered inline, right-aligned via container
+# Tweaks popover — right-aligned, replaces sidebar
 _, col_tweaks = st.columns([5, 1])
 with col_tweaks:
     with st.popover("⚙", use_container_width=True):
@@ -119,10 +119,29 @@ with col_tweaks:
         )
         show_chart = st.toggle("Trend chart", value=True)
 
+# ---------------------------------------------------------------------------
+# Hero + Investigate button + Recent
+# ---------------------------------------------------------------------------
+
 st.html(hero_html(active, metric_style, readings=active_readings))
 
+if active:
+    _, col_inv, _ = st.columns([3, 2, 3])
+    with col_inv:
+        if st.button("Investigate →", key="investigate", use_container_width=True):
+            st.session_state["pre_open_first"] = True
+        elif "pre_open_first" not in st.session_state:
+            st.session_state["pre_open_first"] = False
+
+pre_open = st.session_state.get("pre_open_first", False)
+
+st.html(recent_rows_html(anomalies, metric_style, pre_open_first=pre_open))
+
+# Reset after one render so repeated refreshes don't keep it open
+st.session_state["pre_open_first"] = False
+
 # ---------------------------------------------------------------------------
-# Mini sparkline (single aggregated error-count line)
+# Sparkline — 24h aggregated error-count trend with anomaly markers
 # ---------------------------------------------------------------------------
 
 if show_chart and not trends_df.empty:
@@ -167,11 +186,5 @@ if show_chart and not trends_df.empty:
         chart = line + dots
 
     st.altair_chart(chart, use_container_width=True)
-
-# ---------------------------------------------------------------------------
-# Recent anomaly timeline
-# ---------------------------------------------------------------------------
-
-st.html(recent_rows_html(anomalies, metric_style))
 
 st.caption(f"source `{API_URL}`")
