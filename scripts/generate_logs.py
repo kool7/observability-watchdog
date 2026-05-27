@@ -65,6 +65,13 @@ def _make_entry(service: str, level: str, message: str) -> dict:
     }
 
 
+def _build_spike_batch(service: str, count: int) -> list[dict]:
+    return [
+        _make_entry(service, "ERROR", _render(random.choice(ERROR_MESSAGES)))
+        for _ in range(count)
+    ]
+
+
 def _send(api_url: str, payload: dict | list) -> bool:
     try:
         resp = httpx.post(f"{api_url}/logs/ingest", json=payload, timeout=5)
@@ -115,20 +122,15 @@ def run(
             print(
                 f"\n  >>> Injecting error spike ({spike_errors} errors on {spike_service}) <<<"  # noqa: E501
             )
-            # Send as a single batch request to avoid hitting the rate limiter
-            batch = [
-                _make_entry(
-                    spike_service, "ERROR", _render(random.choice(ERROR_MESSAGES))
-                )  # noqa: E501
-                for _ in range(spike_errors)
-            ]
+            # Single batch request avoids hitting the per-IP rate limiter
+            batch = _build_spike_batch(spike_service, spike_errors)
             if _send(api_url, batch):
                 sent += spike_errors
             else:
                 print(
                     "  [warn] Spike batch failed — anomaly may not trigger",
                     file=sys.stderr,
-                )  # noqa: E501
+                )
             spike_done = True
             print("  >>> Spike complete. Resuming baseline ...\n")
 
