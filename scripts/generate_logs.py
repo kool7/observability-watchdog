@@ -107,7 +107,10 @@ def run(
 
     sent = 0
     spike_done = False
-    spike_at = max(duration // 2, 1)
+    # Fire the spike before the per-IP rate limit (10/min) is exhausted by baseline
+    # requests. Baseline sends ~1 req/s so the 10th request hits the limit at ~10s.
+    # Firing at t=8 leaves 2 spare slots in the window for the single batch request.
+    spike_at = min(8, duration - 1)
 
     start = time.monotonic()
     while True:

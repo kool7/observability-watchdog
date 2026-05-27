@@ -39,8 +39,7 @@ async def create_log_entries_bulk(
     ]
     db.add_all(entries)
     await db.commit()
-    for entry in entries:
-        await db.refresh(entry)
+    # expire_on_commit=False means objects remain usable after commit without refresh
     return entries
 
 

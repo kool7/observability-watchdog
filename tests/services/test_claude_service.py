@@ -162,11 +162,18 @@ class TestRunAnomalyCheckWithNarrative:
 
         now = datetime.now(timezone.utc)
         fake_timestamps = [now - timedelta(seconds=i * 10) for i in range(30)]
+
+        # First execute: cooldown check — return no recent anomaly (None)
+        cooldown_result = MagicMock()
+        cooldown_result.scalar_one_or_none.return_value = None
+
+        # Second execute: error timestamps for Z-score
         mock_scalars = MagicMock()
         mock_scalars.all.return_value = fake_timestamps
-        mock_result = MagicMock()
-        mock_result.scalars.return_value = mock_scalars
-        mock_db.execute = AsyncMock(return_value=mock_result)
+        timestamps_result = MagicMock()
+        timestamps_result.scalars.return_value = mock_scalars
+
+        mock_db.execute = AsyncMock(side_effect=[cooldown_result, timestamps_result])
 
         with (
             patch(

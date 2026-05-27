@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 _DETECTOR_Z_THRESHOLD = 2.0
 _DETECTOR_WINDOW_MINUTES = 5
 _DETECTOR_LOOKBACK_HOURS = 1
+# Suppress duplicate anomalies for the same service within one detection window
+_COOLDOWN_MINUTES = _DETECTOR_WINDOW_MINUTES
 
 
 async def save_anomaly(
@@ -46,13 +48,29 @@ async def save_anomaly(
 
 async def run_anomaly_check(db: AsyncSession, service_name: str) -> Anomaly | None:
     """Fetch recent ERROR timestamps for a service and run Z-score detection."""
+    # Skip if an anomaly was already raised for this service within the cooldown window
+    # to avoid duplicate detections from the same error spike.
+    now = datetime.now(timezone.utc)
+    cooldown_cutoff = now - timedelta(minutes=_COOLDOWN_MINUTES)
+    recent = await db.execute(
+        select(Anomaly.id)
+        .where(
+            and_(
+                Anomaly.service_name == service_name,
+                Anomaly.detected_at >= cooldown_cutoff,
+            )
+        )
+        .limit(1)
+    )
+    if recent.scalar_one_or_none() is not None:
+        return None
+
     detector = ZScoreDetector(
         window_minutes=_DETECTOR_WINDOW_MINUTES,
         z_threshold=_DETECTOR_Z_THRESHOLD,
         lookback_hours=_DETECTOR_LOOKBACK_HOURS,
     )
 
-    now = datetime.now(timezone.utc)
     cutoff = now - timedelta(hours=_DETECTOR_LOOKBACK_HOURS)
 
     log_stmt = select(LogEntry.timestamp).where(
