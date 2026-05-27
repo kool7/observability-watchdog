@@ -39,7 +39,9 @@ async def save_anomaly(
         severity=result.severity,
         ai_narrative=ai_narrative,
         webhook_fired=False,
-        baseline_mean=result.baseline_mean if result.baseline_mean else None,
+        baseline_mean=(
+            result.baseline_mean if result.baseline_mean is not None else None
+        ),
     )
     db.add(anomaly)
     await db.commit()

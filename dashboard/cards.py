@@ -168,7 +168,6 @@ _CSS = """
   }
 
   /* Style the native Streamlit Investigate button to match the hero CTA */
-  [data-testid="stButton"][key="investigate"] button,
   div[data-testid="stButton"] button[kind="secondary"] {
     background: oklch(0.68 0.20 25 / 0.15) !important;
     border: 1px solid oklch(0.68 0.20 25 / 0.4) !important;
@@ -407,11 +406,7 @@ def recent_rows_html(
         iso = a.get("detected_at", "")
         time_str = iso[11:16] if len(iso) >= 16 else "—"
         ago = _relative_time(iso)
-        narrative = (
-            (a.get("ai_narrative") or "No AI narrative available.")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-        )
+        narrative = _e(a.get("ai_narrative") or "No AI narrative available.")
         webhook = "fired ✓" if a.get("webhook_fired") else "not fired"
         w_start = (a.get("window_start") or "")[:16].replace("T", " ")
         w_end = (a.get("window_end") or "")[:16].replace("T", " ")
