@@ -38,7 +38,7 @@
 - [ ] Task 10 (S): Synthetic log generator script with spike simulation
 
 ## Phase 8: Tests
-- [ ] Task 11 (L): Test suite — pytest, ≥ 80% coverage, mocked Claude
+- [x] Task 11 (L): Test suite — pytest, ≥ 80% coverage, mocked Claude
 
 ## Phase 9: Docs + GitHub
 - [ ] Task 12 (S): README + ASCII architecture + prompts.md final

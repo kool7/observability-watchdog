@@ -193,3 +193,47 @@ class TestGetLogById:
     async def test_get_by_invalid_uuid_returns_422(self, client: AsyncClient):
         response = await client.get("/logs/not-a-uuid")
         assert response.status_code == 422
+
+
+# ---------------------------------------------------------------------------
+# Anomaly check exception swallowing (lines 40-41, 47-48)
+# ---------------------------------------------------------------------------
+
+
+class TestAnomalyCheckExceptionSwallowing:
+    async def test_single_ingest_succeeds_when_anomaly_check_raises(
+        self, client: AsyncClient
+    ):
+        fake = _make_db_log(_log_payload())
+        with (
+            patch(
+                "app.routers.logs.create_log_entry", new_callable=AsyncMock
+            ) as mock_create,
+            patch(
+                "app.routers.logs.run_anomaly_check", new_callable=AsyncMock
+            ) as mock_check,
+        ):
+            mock_create.return_value = fake
+            mock_check.side_effect = RuntimeError("detector crashed")
+            response = await client.post("/logs/ingest", json=_log_payload())
+
+        assert response.status_code == 201
+
+    async def test_batch_ingest_succeeds_when_anomaly_check_raises(
+        self, client: AsyncClient
+    ):
+        payloads = [_log_payload(), _log_payload(level="INFO", message="ok")]
+        fakes = [_make_db_log(p) for p in payloads]
+        with (
+            patch(
+                "app.routers.logs.create_log_entries_bulk", new_callable=AsyncMock
+            ) as mock_bulk,
+            patch(
+                "app.routers.logs.run_anomaly_check", new_callable=AsyncMock
+            ) as mock_check,
+        ):
+            mock_bulk.return_value = fakes
+            mock_check.side_effect = RuntimeError("detector crashed")
+            response = await client.post("/logs/ingest", json=payloads)
+
+        assert response.status_code == 201
