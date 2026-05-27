@@ -57,6 +57,7 @@ _CSS = """
     display: flex;
     align-items: center;
     gap: 0.4rem;
+    font-family: 'JetBrains Mono', monospace;
     font-size: 0.8rem;
     color: #93a0b4;
   }
@@ -268,11 +269,15 @@ _CSS = """
 """
 
 
-def header_html() -> str:
+def header_html(clock: str = "") -> str:
+    clock_str = clock or ""
     return f"""{_CSS}
 <div class="wd-header">
   <span class="wd-brand">⊙ Watchdog</span>
-  <span class="wd-live"><span class="wd-dot-green"></span> Live</span>
+  <span class="wd-live">
+    <span class="wd-dot-green"></span>
+    {clock_str}
+  </span>
 </div>
 """
 
@@ -321,7 +326,23 @@ def hero_html(
   <div class="wd-service">{_e(anomaly["service_name"])}</div>
   {metric_html}
   <p class="wd-ai-summary">{first_sentence}</p>
-  <span class="wd-cta">Investigate →</span>
+  <a class="wd-cta" href="#" onclick="
+    try {{
+      var frames = window.parent.document.querySelectorAll('iframe');
+      for (var i = 0; i < frames.length; i++) {{
+        try {{
+          var d = frames[i].contentDocument || frames[i].contentWindow.document;
+          var row = d.querySelector('details.wd-row');
+          if (row) {{
+            row.open = true;
+            row.scrollIntoView({{behavior:'smooth', block:'start'}});
+            break;
+          }}
+        }} catch(e) {{}}
+      }}
+    }} catch(e) {{}}
+    return false;
+  ">Investigate →</a>
 </div>
 """
 

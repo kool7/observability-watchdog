@@ -46,24 +46,6 @@ st.set_page_config(page_title="Watchdog", page_icon="🔭", layout="centered")
 st_autorefresh(interval=10_000, key="refresh")
 
 # ---------------------------------------------------------------------------
-# Sidebar — Tweaks (exactly 2 controls)
-# ---------------------------------------------------------------------------
-
-with st.sidebar:
-    st.header("Tweaks")
-    metric_style = st.selectbox(
-        "Anomaly metric",
-        options=["multiplier", "score", "plain", "zscore"],
-        format_func=lambda v: {
-            "multiplier": "× baseline",
-            "score": "0–100 score",
-            "plain": "Plain English",
-            "zscore": "Z-score",
-        }[v],
-    )
-    show_chart = st.toggle("Trend chart", value=True)
-
-# ---------------------------------------------------------------------------
 # Data
 # ---------------------------------------------------------------------------
 
@@ -103,6 +85,8 @@ active = next(
 # Header + Hero
 # ---------------------------------------------------------------------------
 
+clock = datetime.now(timezone.utc).strftime("%H:%M:%S")
+
 active_readings = (
     metric_readings(
         error_count=active["error_count"],
@@ -117,7 +101,24 @@ active_readings = (
     else None
 )
 
-st.html(header_html())
+st.html(header_html(clock=clock))
+
+# Tweaks popover — rendered inline, right-aligned via container
+_, col_tweaks = st.columns([5, 1])
+with col_tweaks:
+    with st.popover("⚙", use_container_width=True):
+        metric_style = st.selectbox(
+            "Anomaly metric",
+            options=["multiplier", "score", "plain", "zscore"],
+            format_func=lambda v: {
+                "multiplier": "× baseline",
+                "score": "0–100 score",
+                "plain": "Plain English",
+                "zscore": "Z-score",
+            }[v],
+        )
+        show_chart = st.toggle("Trend chart", value=True)
+
 st.html(hero_html(active, metric_style, readings=active_readings))
 
 # ---------------------------------------------------------------------------
@@ -173,7 +174,4 @@ if show_chart and not trends_df.empty:
 
 st.html(recent_rows_html(anomalies, metric_style))
 
-st.caption(
-    f"Last refreshed {datetime.now(timezone.utc).strftime('%H:%M:%S')} UTC · "
-    f"source `{API_URL}`"
-)
+st.caption(f"source `{API_URL}`")

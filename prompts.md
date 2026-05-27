@@ -448,6 +448,16 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
+## Turn 55 — Dashboard UX: Live Clock, Tweaks Popover, Investigate Button
+
+**Timestamp:** 2026-05-27
+
+"[Image #20] [Image #21] the tweak option placement is wrong it is plces on above as setting icon the systej also shows live date time we are not showing it [Image #22] when I click on investogate it automatically bring me to relevant issue with explanation."
+
+[Images: #20 = current Streamlit sidebar with Tweaks. #21 = desired design — header shows live clock "17:16:16" + gear icon on right; Tweaks appears as floating overlay panel triggered by gear icon. #22 = Recent row expanded showing AI narrative, ERRORS IN WINDOW, TOP ERROR, WEBHOOK status, WINDOW times, View logs + Open runbook buttons.]
+
+---
+
 ## Turn 54 — Session Resume: Code Review Fixes + PR OW-14
 
 **Timestamp:** 2026-05-27
