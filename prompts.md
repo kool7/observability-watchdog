@@ -536,6 +536,14 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
+## Turn 62 — Commit .gitignore and push branch to GitHub
+
+**Timestamp:** 2026-05-28
+
+"submission pdf was being tracked commit the gitignore file and push the code changes make sure prompt.md has these prompts"
+
+---
+
 ## Turn 61 — Fix prompts.md order, gitignore submission.pdf, commit handoff.md
 
 **Timestamp:** 2026-05-28

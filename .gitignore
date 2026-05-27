@@ -18,6 +18,6 @@ tasks/minimal/*.jsx
 tasks/minimal/*.html
 tasks/detailed/*.jsx
 tasks/detailed/*.html
-submission.pdf
+/submission.pdf
 *.png
 assets/demo.gif
