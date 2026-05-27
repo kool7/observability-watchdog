@@ -35,13 +35,13 @@
 ## Checkpoint 5: Full MVP working — run generate_logs.py, dashboard shows all data
 
 ## Phase 7: Log Generator
-- [ ] Task 10 (S): Synthetic log generator script with spike simulation
+- [x] Task 10 (S): Synthetic log generator script with spike simulation
 
 ## Phase 8: Tests
 - [x] Task 11 (L): Test suite — pytest, ≥ 80% coverage, mocked Claude
 
 ## Phase 9: Docs + GitHub
-- [ ] Task 12 (S): README + ASCII architecture + prompts.md final
+- [x] Task 12 (S): README + ASCII architecture + prompts.md final
 - [x] Task 13 (S): git init + PRIVATE GitHub repo via MCP + branch protection (no merge without approval) + PR via create-pr skill
 
 ## Final Checkpoint: All green, PR open, repo private, branch protection active
