@@ -373,3 +373,11 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 "The PR looks good, It is merged to main. Let's proceed with next task."
 
 ---
+
+## Turn 44 — Task 12: README Refactor — ToC, Collapsible Sections, Mermaid Architecture, Presentation Deck
+
+**Timestamp:** 2026-05-27
+
+"is this correct? also the readme skill is not used to its correct potential the readme file you created is created with a template I use for vscode extension cause those are public facing and need to to explain what the product feature extension does. this on the other hand is a service which has to be used by dev please explore the skill and refactor the readme. We need to use table of content and user shall be able to scroll to table cf content and from each section they visit. in many cases I have seen some readme also shows content in this line like tabs user cn click and see the relevant info fast. as part of submission we need to fulfill this so I was thinking a good markdown for architecture would be great [ ] AI-generated Presentation Deck (PPT or Markdown solution explaining the architecture)."
+
+---
