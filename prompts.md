@@ -317,3 +317,27 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 "prompts seems missing would you mind adding those missing prompts? why and what could be the reason that you are forgetting this specific thing to do sometime?"
 
 ---
+
+## Turn 38 — Task 9 Merged, Proceed to Task 10
+
+**Timestamp:** 2026-05-27
+
+"Looks good PR is merged, let's move with the next task in line. Post these are done we will do enhancements and testing"
+
+---
+
+## Turn 39 — Task 10: Open PR for Review
+
+**Timestamp:** 2026-05-27
+
+"Open the PR, I will review once more on github."
+
+---
+
+## Turn 40 — prompts.md Still Not Audited
+
+**Timestamp:** 2026-05-27
+
+"Still prompt.md is not audited aren't we able to keep up with instruction given? check the very first prompt. and after adding these prompt.md push the commit."
+
+---
