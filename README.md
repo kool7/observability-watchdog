@@ -11,6 +11,8 @@
 
 An API-first observability service that ingests structured application logs, detects error spikes using Z-score statistical analysis, enriches every anomaly with a Claude AI incident narrative, fires simulated webhook alerts, and visualises health trends in real time. Built for the Wolters Kluwer engineering assessment on a fully async Python stack.
 
+![Demo](assets/demo.gif)
+
 ---
 
 ## Table of Contents

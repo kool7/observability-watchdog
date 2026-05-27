@@ -19,5 +19,3 @@ tasks/minimal/*.html
 tasks/detailed/*.jsx
 tasks/detailed/*.html
 /submission.pdf
-*.png
-assets/demo.gif
