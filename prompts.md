@@ -448,6 +448,14 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
+## Turn 56 — Close Running Processes + prompts.md Audit
+
+**Timestamp:** 2026-05-27
+
+"update prompt.md if streamlit or api instance running on those ports close them do not add this in promo.md but above ones shall be if not"
+
+---
+
 ## Turn 55 — Dashboard UX: Live Clock, Tweaks Popover, Investigate Button
 
 **Timestamp:** 2026-05-27
@@ -473,5 +481,21 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 "I used claude design because I was not pleased with design but even this design is way too much for any user to understand the dashboard. please follow minimal folder docs and only check detiled ones if needed that's way too much info for this initial assessment which I do not want to use to buildthe dash. could you please assess and let me know your plan and what you understood after going through handoff.mf also do not forget to make use of the agent skill plugin and use it to best of it scapability as we had used it so far and also make sure to update plan spec tasks if needed and prompt.md as well."
 
 [Images shared: Claude design prototype screenshots — Overview tab (dark theme, nav bar, KPI cards, active incident panel, service health, error rate chart) and second screen (detailed version with more panels). User says both are too complex.]
+
+---
+
+## Turn 57 — Layout Fixes: Chart Above Recent, Spacing, Footer, Chart Labels
+
+**Timestamp:** 2026-05-27
+
+"Also the chart placement is in middle and three sections are quite spacy in design. [Image #23] even after sharing those jsx why so many issues? please check the jsx files properly if needed. there are three more jsx in detailed folder those might give you some more idea to adjust the ui."
+
+[Image #23: desired layout — Header (Watchdog + live clock + tweaks icon, tight row). Chart section ("LAST 6 HOURS · PAYMENT-SERVICE" left + "peak 30 errors / 5 min" right labels, white sparkline + red anomaly dots). Recent section (3 events, tight rows with dot + time + ago + service + metric + chevron). Footer (WATCHDOG left, "api → http://localhost:8000" right). No KPI cards, no tabs, no sidebar. Very tight vertical spacing.]
+
+Issues to fix from minimal/app.jsx reference:
+1. Chart must come BEFORE Recent section (hero → chart → recent → footer)
+2. Chart needs context labels: left = "LAST 24 HOURS · service", right = "peak N errors / 5 min"
+3. Footer: "WATCHDOG" left, "api → API_URL" right
+4. Reduce excessive padding/margins between all sections
 
 ---

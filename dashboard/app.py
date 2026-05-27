@@ -9,7 +9,13 @@ import altair as alt
 import pandas as pd
 import requests
 import streamlit as st
-from cards import header_html, hero_html, recent_rows_html
+from cards import (
+    chart_header_html,
+    footer_html,
+    header_html,
+    hero_html,
+    recent_rows_html,
+)
 from streamlit_autorefresh import st_autorefresh
 
 
@@ -44,6 +50,21 @@ API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 st.set_page_config(page_title="Watchdog", page_icon="🔭", layout="centered")
 st_autorefresh(interval=10_000, key="refresh")
+
+# Reduce Streamlit's default vertical padding between widget blocks
+st.markdown(
+    """
+<style>
+  section[data-testid="stMain"] .block-container {
+    padding-top: 1rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+  div[data-testid="stHtml"] { margin-bottom: -0.75rem !important; }
+  div[data-testid="stAltairChart"] { margin-top: -0.25rem !important; }
+</style>
+""",
+    unsafe_allow_html=True,
+)
 
 # ---------------------------------------------------------------------------
 # Data
@@ -120,7 +141,7 @@ with col_tweaks:
         show_chart = st.toggle("Trend chart", value=True)
 
 # ---------------------------------------------------------------------------
-# Hero + Investigate button + Recent
+# Hero + Investigate button
 # ---------------------------------------------------------------------------
 
 st.html(hero_html(active, metric_style, readings=active_readings))
@@ -133,15 +154,9 @@ if active:
         elif "pre_open_first" not in st.session_state:
             st.session_state["pre_open_first"] = False
 
-pre_open = st.session_state.get("pre_open_first", False)
-
-st.html(recent_rows_html(anomalies, metric_style, pre_open_first=pre_open))
-
-# Reset after one render so repeated refreshes don't keep it open
-st.session_state["pre_open_first"] = False
-
 # ---------------------------------------------------------------------------
 # Sparkline — 24h aggregated error-count trend with anomaly markers
+# (chart goes above Recent per design spec)
 # ---------------------------------------------------------------------------
 
 if show_chart and not trends_df.empty:
@@ -150,6 +165,9 @@ if show_chart and not trends_df.empty:
         .sum()
         .sort_values("bucket")
     )
+    peak = int(agg["error_count"].max()) if not agg.empty else 0
+    focus_service = active["service_name"] if active else None
+    st.html(chart_header_html(focus_service, peak))
 
     anomaly_times = pd.DataFrame(
         [
@@ -166,10 +184,13 @@ if show_chart and not trends_df.empty:
         alt.Chart(agg)
         .mark_line(color="#5B8FB0", strokeWidth=1.5)
         .encode(
-            x=alt.X("bucket:T", axis=alt.Axis(title=None, labelAngle=-30, tickCount=6)),
+            x=alt.X(
+                "bucket:T",
+                axis=alt.Axis(title=None, labelAngle=-30, tickCount=6),
+            ),
             y=alt.Y("error_count:Q", axis=alt.Axis(title=None, tickCount=4)),
         )
-        .properties(height=110)
+        .properties(height=100)
     )
 
     chart = line
@@ -187,4 +208,18 @@ if show_chart and not trends_df.empty:
 
     st.altair_chart(chart, use_container_width=True)
 
-st.caption(f"source `{API_URL}`")
+# ---------------------------------------------------------------------------
+# Recent anomaly timeline
+# ---------------------------------------------------------------------------
+
+pre_open = st.session_state.get("pre_open_first", False)
+st.html(recent_rows_html(anomalies, metric_style, pre_open_first=pre_open))
+
+# Reset after one render so repeated refreshes don't keep it open
+st.session_state["pre_open_first"] = False
+
+# ---------------------------------------------------------------------------
+# Footer
+# ---------------------------------------------------------------------------
+
+st.html(footer_html(API_URL))

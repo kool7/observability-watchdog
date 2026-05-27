@@ -70,8 +70,8 @@ _CSS = """
 
   .wd-hero {
     border-radius: 12px;
-    padding: 2.5rem 2rem;
-    margin: 0.5rem 0 1.5rem;
+    padding: 1.5rem 1.5rem;
+    margin: 0.25rem 0 0.75rem;
     text-align: center;
   }
   .wd-hero-ok {
@@ -181,7 +181,7 @@ _CSS = """
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    margin: 1.5rem 0 0.6rem;
+    margin: 0.5rem 0 0.5rem;
     padding-bottom: 0.4rem;
     border-bottom: 1px solid #2a3040;
   }
@@ -339,6 +339,32 @@ def hero_html(
   <span class="wd-cta-placeholder"></span>
 </div>
 """
+
+
+def chart_header_html(service: str | None, peak: int) -> str:
+    label = "LAST 24 HOURS"
+    if service:
+        label += f" · {_e(service)}"
+    return f"""
+<div style="display:flex;justify-content:space-between;align-items:baseline;
+  padding:0.1rem 0 0.2rem;margin-top:0.25rem;">
+  <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;
+    color:#6b7a94;text-transform:uppercase;">{label}</span>
+  <span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;
+    color:#6b7a94;">peak {peak} errors / 5 min</span>
+</div>"""
+
+
+def footer_html(api_url: str) -> str:
+    return f"""
+<div style="display:flex;justify-content:space-between;align-items:center;
+  padding:0.75rem 0 0.5rem;margin-top:0.25rem;
+  border-top:1px solid #2a3040;">
+  <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;
+    color:#4a5568;text-transform:uppercase;">WATCHDOG</span>
+  <span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;
+    color:#4a5568;">api → {_e(api_url)}</span>
+</div>"""
 
 
 def recent_rows_html(
