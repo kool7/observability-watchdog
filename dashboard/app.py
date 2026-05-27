@@ -9,7 +9,7 @@ import altair as alt
 import pandas as pd
 import requests
 import streamlit as st
-from cards import header_html, hero_html
+from cards import header_html, hero_html, recent_rows_html
 from streamlit_autorefresh import st_autorefresh
 
 
@@ -165,39 +165,7 @@ if show_chart and not trends_df.empty:
 # Recent anomaly timeline
 # ---------------------------------------------------------------------------
 
-st.markdown("#### Recent")
-
-if not anomalies:
-    st.caption("No anomalies in the last 6 hours.")
-else:
-    for a in anomalies:
-        r = metric_readings(
-            error_count=a["error_count"],
-            baseline_mean=a.get("baseline_mean") or 0.4,
-            z_score=a["z_score"],
-        )
-        ts = a["detected_at"][:16].replace("T", " ")
-        label = (
-            f"{ts}  ·  {a['service_name']}  ·  "
-            f"{r['multiplier']:.0f}× normal  ·  {a['severity']}"
-        )
-        with st.expander(label):
-            st.write(a.get("ai_narrative") or "_No AI narrative available._")
-            col1, col2 = st.columns(2)
-            col1.metric(
-                "Errors in window",
-                a["error_count"],
-                delta=f"baseline ≈ {r['baseline']:.1f}",
-                delta_color="inverse",
-            )
-            col2.metric(
-                "Webhook",
-                "fired ✓" if a.get("webhook_fired") else "not fired",
-            )
-            st.caption(
-                f"Window: {a['window_start'][:16].replace('T',' ')} → "
-                f"{a['window_end'][:16].replace('T',' ')} UTC"
-            )
+st.html(recent_rows_html(anomalies, metric_style))
 
 st.caption(
     f"Last refreshed {datetime.now(timezone.utc).strftime('%H:%M:%S')} UTC · "

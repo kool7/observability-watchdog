@@ -430,6 +430,16 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
+## Turn 53 — Dashboard Visual Gap vs Design
+
+**Timestamp:** 2026-05-27
+
+"The UI is very odd is it cause of streamlit? [Image #18] this si what design has [Image #19] this is what I see which looks reallybad"
+
+[Images: design shows clean custom-HTML Recent rows with colored dots, relative timestamps "Xm ago", monospace service names, right-aligned red "75× normal". Our version shows blocky Streamlit expander boxes with full ISO timestamps and no styling. Hero card looks good but Streamlit toolbar (Deploy button) is visible.]
+
+---
+
 ## Turn 52 — Proceed with Task 14 Implementation
 
 **Timestamp:** 2026-05-27

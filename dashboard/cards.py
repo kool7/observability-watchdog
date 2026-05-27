@@ -2,6 +2,33 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
+
+def _relative_time(iso: str) -> str:
+    """Convert ISO timestamp string to e.g. '4m ago'."""
+    try:
+        dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        delta = datetime.now(timezone.utc) - dt
+        secs = int(delta.total_seconds())
+        if secs < 60:
+            return f"{secs}s ago"
+        if secs < 3600:
+            return f"{secs // 60}m ago"
+        return f"{secs // 3600}h ago"
+    except Exception:
+        return ""
+
+
+_SEVERITY_COLOR = {
+    "CRITICAL": "oklch(0.68 0.20 25)",
+    "HIGH": "oklch(0.75 0.16 45)",
+    "MEDIUM": "oklch(0.82 0.13 80)",
+    "LOW": "oklch(0.74 0.12 240)",
+}
+
 _CSS = """
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
@@ -131,6 +158,106 @@ _CSS = """
     text-decoration: none;
     cursor: default;
   }
+
+  /* Recent timeline */
+  .wd-recent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 1.5rem 0 0.6rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #2a3040;
+  }
+  .wd-recent-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #6b7a94;
+    text-transform: uppercase;
+  }
+  .wd-recent-count {
+    font-size: 0.75rem;
+    color: #6b7a94;
+  }
+  .wd-row {
+    border-bottom: 1px solid #1e2530;
+    list-style: none;
+  }
+  .wd-row summary {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+  .wd-row summary::-webkit-details-marker { display: none; }
+  .wd-row summary:hover { background: #161d28; }
+  .wd-row-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .wd-row-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: #edf0f5;
+    min-width: 3rem;
+  }
+  .wd-row-ago {
+    font-size: 0.78rem;
+    color: #6b7a94;
+    min-width: 4.5rem;
+  }
+  .wd-row-service {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: #93a0b4;
+    flex: 1;
+  }
+  .wd-row-metric {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-left: auto;
+  }
+  .wd-row-arrow {
+    font-size: 0.7rem;
+    color: #6b7a94;
+    transition: transform 0.15s;
+  }
+  .wd-row[open] .wd-row-arrow { transform: rotate(90deg); }
+  .wd-row-body {
+    padding: 0.75rem 1rem 1rem 1.5rem;
+    background: #111820;
+    border-radius: 0 0 6px 6px;
+    margin-bottom: 0.25rem;
+  }
+  .wd-row-narrative {
+    font-size: 0.85rem;
+    color: #93a0b4;
+    font-style: italic;
+    margin: 0 0 0.75rem;
+    line-height: 1.5;
+  }
+  .wd-row-stats {
+    display: flex;
+    gap: 2rem;
+    font-size: 0.8rem;
+    color: #6b7a94;
+    margin-bottom: 0.4rem;
+  }
+  .wd-row-stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    color: #edf0f5;
+    font-weight: 600;
+  }
+  .wd-row-window {
+    font-size: 0.75rem;
+    color: #4a5568;
+    margin-top: 0.4rem;
+  }
 </style>
 """
 
@@ -190,4 +317,83 @@ def hero_html(
   <p class="wd-ai-summary">{first_sentence}</p>
   <span class="wd-cta">Investigate →</span>
 </div>
+"""
+
+
+def recent_rows_html(anomalies: list[dict], metric_style: str = "multiplier") -> str:
+    if not anomalies:
+        return (
+            '<p style="color:#6b7a94;font-size:0.85rem;margin-top:1rem;">'
+            "No anomalies in the last 6 hours.</p>"
+        )
+
+    rows = []
+    for a in anomalies:
+        sev = a.get("severity", "LOW")
+        color = _SEVERITY_COLOR.get(sev, "#5B8FB0")
+        bl = max(a.get("baseline_mean") or 0.4, 0.4)
+        multiplier = a["error_count"] / bl
+        z = a.get("z_score", 0)
+        score = min(100, round(20 + z * 8))
+        if z >= 10:
+            plain = "Severe spike"
+        elif z >= 5:
+            plain = "Critical spike"
+        elif z >= 3:
+            plain = "Unusually high"
+        elif z >= 2:
+            plain = "Slightly elevated"
+        else:
+            plain = "Within normal range"
+
+        metric_label = {
+            "multiplier": f"{multiplier:.0f}× normal",
+            "score": f"{score} / 100",
+            "plain": plain,
+            "zscore": f"z={z:.1f}",
+        }.get(metric_style, f"{multiplier:.0f}× normal")
+
+        iso = a.get("detected_at", "")
+        time_str = iso[11:16] if len(iso) >= 16 else "—"
+        ago = _relative_time(iso)
+        narrative = (
+            (a.get("ai_narrative") or "No AI narrative available.")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+        )
+        webhook = "fired ✓" if a.get("webhook_fired") else "not fired"
+        w_start = (a.get("window_start") or "")[:16].replace("T", " ")
+        w_end = (a.get("window_end") or "")[:16].replace("T", " ")
+
+        rows.append(
+            f"""
+<details class="wd-row">
+  <summary>
+    <span class="wd-row-dot"
+      style="background:{color};box-shadow:0 0 5px {color}80;"></span>
+    <span class="wd-row-time">{time_str}</span>
+    <span class="wd-row-ago">{ago}</span>
+    <span class="wd-row-service">{a["service_name"]}</span>
+    <span class="wd-row-metric" style="color:{color};">{metric_label}</span>
+    <span class="wd-row-arrow">▶</span>
+  </summary>
+  <div class="wd-row-body">
+    <p class="wd-row-narrative">{narrative}</p>
+    <div class="wd-row-stats">
+      <span>Errors&nbsp;<span class="wd-row-stat-val">{a["error_count"]}</span></span>
+      <span>Baseline&nbsp;<span class="wd-row-stat-val">≈{bl:.1f}</span></span>
+      <span>Webhook&nbsp;<span class="wd-row-stat-val">{webhook}</span></span>
+    </div>
+    <div class="wd-row-window">Window: {w_start} → {w_end} UTC</div>
+  </div>
+</details>"""
+        )
+
+    count = len(anomalies)
+    return f"""
+<div class="wd-recent-header">
+  <span class="wd-recent-title">Recent</span>
+  <span class="wd-recent-count">{count} event{"s" if count != 1 else ""}</span>
+</div>
+{"".join(rows)}
 """
