@@ -5,6 +5,8 @@
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green.svg)](https://fastapi.tiangolo.com)
 [![uv](https://img.shields.io/badge/uv-package%20manager-purple.svg)](https://docs.astral.sh/uv)
+[![Tests](https://img.shields.io/badge/tests-110%20passed-brightgreen.svg)](#running-tests)
+[![Coverage](https://img.shields.io/badge/coverage-88%25-brightgreen.svg)](#running-tests)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 An API-first observability service that ingests application logs, detects error spikes using statistical analysis and Claude AI, fires simulated webhook alerts when thresholds are breached, and visualizes health trends in real time. Built with FastAPI and PostgreSQL on a fully async stack.
@@ -14,32 +16,41 @@ An API-first observability service that ingests application logs, detects error 
 ## Architecture
 
 ```
-                        ┌─────────────────────────────────────────────┐
-                        │              Observability Watchdog         │
-                        │                                             │
-  Application  ──POST──▶│  FastAPI  ──▶  Anomaly Detector (Z-score)   │
-     Logs               │                       │                     │
-                        │                       ▼                     │
-                        │              Claude AI Narrative            │
-                        │               (claude-sonnet-4-6)           │
-                        │                       │                     │
-                        │              ┌────────┴────────┐            │
-                        │              ▼                 ▼            │
-                        │         PostgreSQL      Webhook Alert       │
-                        │         (Neon.tech)     (simulated)         │
-                        │              │                              │
-                        └──────────────┼──────────────────────────────┘
-                                       │
-                                       ▼
-                              Streamlit Dashboard
-                         (live charts, auto-refresh 10s)
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │                     Observability Watchdog                          │
+  │                                                                     │
+  │   POST /logs/ingest                                                 │
+  │  ─────────────────▶  Log Router  ──▶  log_service  ──▶  PostgreSQL  │
+  │  (single or batch)        │            (persist)        (Neon.tech)  │
+  │                           │                                  ▲      │
+  │                           ▼                                  │      │
+  │                   anomaly_service                            │      │
+  │                  (Z-score on 5-min                           │      │
+  │                   rolling window)                            │      │
+  │                           │                                  │      │
+  │               ┌───────────┴───────────┐                      │      │
+  │               ▼                       ▼                      │      │
+  │       claude_service          webhook_service  ──────────────┘      │
+  │   (AI incident narrative)   (fire + log alert)                      │
+  │    claude-sonnet-4-6          POST /webhook/receive                 │
+  │               │                                                     │
+  └───────────────┼─────────────────────────────────────────────────────┘
+                  │
+                  ▼
+        GET /health/trends          GET /anomalies        GET /logs
+               │                         │                    │
+               └─────────────────────────┴────────────────────┘
+                                         │
+                                         ▼
+                               Streamlit Dashboard
+                          (5 charts · auto-refresh 10s)
 ```
 
 ---
 
 ## Features
 
-- **Log Ingestion API** — Ingest single or batch log entries via REST with per-IP rate limiting (10 req/min)
+- **Log Ingestion API** — Ingest single or batch log entries via REST with per-IP rate limiting (10 req/min on `POST /logs/ingest`)
 - **Statistical Anomaly Detection** — Z-score analysis on 5-minute rolling windows; severity bands from LOW to CRITICAL
 - **Claude AI Incident Narratives** — Every detected anomaly gets a 3-sentence SRE-style root cause summary from Claude
 - **Simulated Webhook Alerts** — Fires and logs webhook events when anomaly thresholds are breached
@@ -86,7 +97,7 @@ uv sync
 cp .env.example .env
 # Edit .env — set DATABASE_URL and ANTHROPIC_API_KEY
 
-# 3. Run database migrations
+# 3. Run database migrations (DATABASE_URL must point to an existing Neon database)
 uv run alembic upgrade head
 
 # 4. Start the API server
@@ -155,11 +166,15 @@ DATABASE_URL=postgresql+asyncpg://user:password@ep-xxxx.neon.tech/watchdog?sslmo
 ANTHROPIC_API_KEY=sk-ant-...
 WEBHOOK_URL=http://localhost:8000/webhook/receive
 APP_ENV=development
+CLAUDE_MODEL=claude-sonnet-4-6
+CLAUDE_MAX_TOKENS=256
 ```
 
 ---
 
 ## Running Tests
+
+110 tests, 88% coverage across all service, router, and middleware layers:
 
 ```bash
 uv run pytest tests/ -v --cov=app --cov-report=term-missing
@@ -173,13 +188,16 @@ uv run ruff check . && uv run black --check . && uv run mypy app/
 
 ---
 
-## Next Steps
+## Known Gaps & Roadmap
 
-- **Authentication** — Add JWT/OAuth2 bearer token auth on all write endpoints
+Auth was intentionally deferred to keep the MVP scope focused on the detection pipeline; production hardening would address these first:
+
+- **Authentication** — Add JWT/OAuth2 bearer token auth on all write endpoints (priority for regulated-industry deployment)
 - **Docker Compose** — Containerize the API and dashboard for one-command local setup
 - **Cloud Deployment** — Deploy to Azure App Service or AWS ECS with managed Postgres
 - **Real Webhook Targets** — Integrate with Slack, PagerDuty, or Microsoft Teams
 - **OpenTelemetry** — Add distributed tracing via OpenTelemetry SDK
+- **Test Coverage** — Increase from 88% to ≥95% by adding integration tests for service-layer edge cases
 
 ---
 

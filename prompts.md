@@ -349,3 +349,27 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 "Still prompt.md is not audited aren't we able to keep up with instruction given? check the very first prompt. and after adding these prompt.md push the commit."
 
 ---
+
+## Turn 41 — Task 10 Merged, Proceed to Task 11
+
+**Timestamp:** 2026-05-27
+
+"The pR looks good, It is merged to main. Let's proceed with next task."
+
+---
+
+## Turn 42 — Task 11: Push Changes + Raise PR + Playwright Instruction
+
+**Timestamp:** 2026-05-27
+
+"push the changes and raise the PR. Not for remaining tasks I would like to see use of plywright for testing UI. As we are approaching completion of all tasks. Post this I will move onto enhancements"
+
+---
+
+## Turn 43 — Task 11 Merged, Proceed to Task 12
+
+**Timestamp:** 2026-05-27
+
+"The PR looks good, It is merged to main. Let's proceed with next task."
+
+---
