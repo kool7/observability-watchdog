@@ -22,6 +22,40 @@ class AnomalyResult:
     z_score: float
     threshold_breached: float
     severity: Severity
+    baseline_mean: float = 0.0
+    trend_direction: str | None = None
+
+
+def metric_readings(error_count: int, baseline_mean: float, z_score: float) -> dict:
+    """Translate raw anomaly stats into reader-friendly representations.
+
+    Returns multiplier ("30× normal"), 0-100 score, plain-English label,
+    percentage above baseline, the raw z-score, and the floored baseline value.
+    """
+    baseline = max(baseline_mean, 0.4)
+    multiplier = error_count / baseline
+    pct_above = ((error_count - baseline) / baseline) * 100
+    score = min(100, round(20 + z_score * 8))
+
+    if z_score >= 10:
+        plain = "Severe spike"
+    elif z_score >= 5:
+        plain = "Critical spike"
+    elif z_score >= 3:
+        plain = "Unusually high"
+    elif z_score >= 2:
+        plain = "Slightly elevated"
+    else:
+        plain = "Within normal range"
+
+    return {
+        "multiplier": multiplier,
+        "pct_above": pct_above,
+        "score": score,
+        "plain": plain,
+        "z": z_score,
+        "baseline": baseline,
+    }
 
 
 def _classify_severity(z_score: float) -> Severity:
@@ -86,6 +120,14 @@ class ZScoreDetector:
         window_end = at
         window_start = at - window_duration
 
+        prev_count = counts[-2] if len(counts) >= 2 else 0
+        if current_count > prev_count:
+            trend = "rising"
+        elif current_count < prev_count:
+            trend = "recovering"
+        else:
+            trend = "flat"
+
         return AnomalyResult(
             service_name=service_name,
             detected_at=datetime.now(timezone.utc),
@@ -95,4 +137,6 @@ class ZScoreDetector:
             z_score=round(z, 4),
             threshold_breached=self.z_threshold,
             severity=_classify_severity(z),
+            baseline_mean=round(mean, 4),
+            trend_direction=trend,
         )

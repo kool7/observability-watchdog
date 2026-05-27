@@ -12,3 +12,9 @@ dist/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# Design prototypes (not part of the codebase)
+tasks/minimal/*.jsx
+tasks/minimal/*.html
+tasks/detailed/*.jsx
+tasks/detailed/*.html
