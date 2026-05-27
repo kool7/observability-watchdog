@@ -220,19 +220,49 @@ The `/webhook/receive` endpoint acts as a local sink. In production, `WEBHOOK_UR
 
 ## 9. Streamlit Dashboard
 
-The dashboard (`dashboard/app.py`) polls the API every 10 seconds using a JavaScript `setTimeout` trick (since Streamlit's native `st.rerun` is pull-based).
+The dashboard (`dashboard/app.py`) is a minimal single-page layout designed around one question: _"Is anything wrong right now?"_
 
-**5 chart panels:**
+**Auto-refresh:** `streamlit-autorefresh` fires a full Streamlit rerun every 10 seconds — no JS hacks needed.
 
-| Panel | Data source | Chart type |
-| ----- | ----------- | ---------- |
-| Error Rate Over Time | `GET /health/trends` | `st.line_chart` — error count per service per 5-min bucket |
-| Service Health Matrix | `GET /health/trends` (latest bucket) | `st.dataframe` — error rate % with 🔴/🟡/🟢 status per service |
-| Anomaly Events | `GET /anomalies` | `st.dataframe` — table with severity icon column |
-| Latest AI Narrative | `GET /anomalies` (most recent) | `st.info()` — single narrative block for the most recent anomaly |
-| Webhook Fired Log | `GET /webhook/events` | `st.dataframe` — fired events with response status |
+**Layout (top to bottom):**
 
-All panels degrade gracefully when the API is unreachable — empty states are shown with a warning banner rather than an uncaught exception.
+```
+┌─────────────────────────────────────────┐
+│  ⊙ Watchdog          ● 18:21:38   ⚙ ▾  │  ← Header + live UTC clock + tweaks popover
+├─────────────────────────────────────────┤
+│         ACTIVE INCIDENT                  │
+│       payment-service                   │  ← Status hero (red when anomaly,
+│            75×                          │    green checkmark when all clear)
+│      above normal                       │
+│  [Investigate →]                        │
+├─────────────────────────────────────────┤
+│ LAST 24H · PAYMENT-SERVICE  peak 30/5m  │
+│  ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█•            │  ← Altair sparkline — white line,
+│  06 PM               18:21             │    red anomaly dots, no y-axis
+├─────────────────────────────────────────┤
+│ RECENT                       3 events   │
+│  ● 18:19  2m ago  payment-service 75×  │  ← Expandable rows with full
+│  ● 10:57  7h ago  payment-service 75×  │    AI narrative + webhook status
+├─────────────────────────────────────────┤
+│ WATCHDOG          api → localhost:8000  │  ← Footer
+└─────────────────────────────────────────┘
+```
+
+**Data sources:**
+
+| Section | Endpoint | Notes |
+| ------- | -------- | ----- |
+| Status hero | `GET /anomalies` | First CRITICAL or HIGH anomaly |
+| Sparkline | `GET /health/trends?hours=24` | Aggregated error count per 5-min bucket |
+| Recent timeline | `GET /anomalies?limit=10` | All anomalies, expandable with narrative |
+
+**Metric display modes** (selectable via ⚙ Tweaks popover):
+- `× baseline` — multiplier (e.g. 75×)
+- `0–100 score` — normalised anomaly score
+- `Plain English` — "Severe spike", "Unusually high", etc.
+- `Z-score` — raw statistical deviation
+
+All sections degrade gracefully when the API is unreachable.
 
 ---
 

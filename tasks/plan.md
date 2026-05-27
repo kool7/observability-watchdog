@@ -442,3 +442,50 @@ pyproject.toml + scaffold
 | Tests | 11 | 60 min |
 | Docs + GitHub | 12–13 | 30 min |
 | **Total** | **13 tasks** | **~6 hours** |
+
+---
+
+## Phase 10: Dashboard Redesign
+
+### Task 14 (M): Minimal Dashboard Rewrite
+
+**Description:** Replace the current 261-line multi-section dashboard with a ruthlessly minimal single-page layout based on `tasks/minimal/handoff.md`. The page answers one question: "is anything wrong right now?" Five elements visible by default — header, status hero, one sparkline, recent anomaly timeline, footer. No tabs, no KPI cards, no service health column.
+
+**Acceptance criteria:**
+- [ ] Dashboard loads at http://localhost:8501 without errors
+- [ ] Status hero shows green "All systems normal" when no active anomalies
+- [ ] Status hero shows "Active incident · `<service>` · **N×** above normal + first AI sentence + Investigate CTA" when anomaly exists
+- [ ] Single 6h error-rate sparkline rendered via Altair (height ~110px) with red dots at anomaly buckets
+- [ ] Recent timeline: one `st.expander` row per anomaly — collapsed shows `HH:MM · service · N× normal`; expanded shows full AI narrative, error count vs baseline, webhook status
+- [ ] Sidebar contains exactly 2 controls: metric style selectbox (× baseline / 0–100 score / Plain English / Z-score) and chart toggle
+- [ ] Auto-refresh every 10s via `streamlit-autorefresh` package (not JS reload)
+- [ ] Dark theme applied via `.streamlit/config.toml`
+- [ ] `metric_readings()` helper added to `app/services/anomaly_detector.py`
+- [ ] `AnomalyResponse` extended with `baseline_mean: float | None`, `top_errors: list[dict]`, `trend_direction: str | None`
+- [ ] All existing `uv run pytest tests/ -v` tests still pass
+
+**Verification:**
+- [ ] `uv run pytest tests/ -v --cov=app` — all green, coverage ≥ 80%
+- [ ] Playwright MCP: navigate to http://localhost:8501, screenshot hero, verify expander opens/closes
+- [ ] Run `generate_logs.py` spike, confirm hero flips to "Active incident"
+
+**Dependencies:** Tasks 1–13 complete ✅
+
+**Files touched:**
+- `app/services/anomaly_detector.py` — add `metric_readings()` helper
+- `app/schemas/anomaly.py` — extend `AnomalyResponse` with `baseline_mean`, `top_errors`, `trend_direction`
+- `app/services/anomaly_service.py` — populate new schema fields on save/return
+- `dashboard/app.py` — full rewrite (~60 lines)
+- `dashboard/cards.py` — new file: `header_html()` + `hero_html()` f-string templates
+- `.streamlit/config.toml` — new file: dark theme
+- `pyproject.toml` — add `streamlit-autorefresh` dependency
+
+**Implementation slices (incremental order):**
+1. `metric_readings()` in anomaly_detector — pure function, test first
+2. Schema + serializer fields — no dashboard changes yet
+3. `.streamlit/config.toml` + `pyproject.toml` dep
+4. `dashboard/cards.py` templates
+5. `dashboard/app.py` rewrite
+6. Playwright smoke test
+
+**Estimated scope:** Medium (6–7 files, ~2h)

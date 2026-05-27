@@ -52,3 +52,6 @@
 - No merge to main without PR + approval (branch protection)
 - prompts.md updated after every turn
 - tasks/todo.md updated at START and END of every task (before creating PR)
+
+## Phase 10: Dashboard Redesign
+- [x] Task 14 (M): Minimal dashboard rewrite — hero + sparkline + expander timeline (handoff.md)

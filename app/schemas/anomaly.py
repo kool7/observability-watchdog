@@ -20,3 +20,4 @@ class AnomalyResponse(BaseModel):
     ai_narrative: str | None
     severity: Severity
     webhook_fired: bool
+    baseline_mean: float | None = None

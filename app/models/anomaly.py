@@ -41,3 +41,4 @@ class Anomaly(Base):
         SAEnum(Severity, native_enum=False, length=20), nullable=False
     )
     webhook_fired: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    baseline_mean: Mapped[float | None] = mapped_column(Float, nullable=True)

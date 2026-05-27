@@ -1,23 +1,73 @@
-"""Streamlit dashboard — Observability Watchdog."""
+"""Watchdog dashboard — minimal single-page Streamlit app."""
+
+from __future__ import annotations
 
 import os
 from datetime import datetime, timezone
 
+import altair as alt
 import pandas as pd
 import requests
 import streamlit as st
+from cards import (
+    chart_header_html,
+    footer_html,
+    header_html,
+    hero_html,
+    recent_rows_html,
+)
+from streamlit_autorefresh import st_autorefresh
+
+
+# Local copy — importing from app.* pulls in SQLAlchemy/asyncpg, breaking Streamlit's
+# process model. Keep in sync with anomaly_detector.py manually.
+def metric_readings(error_count: int, baseline_mean: float, z_score: float) -> dict:
+    baseline = max(baseline_mean, 0.4)
+    multiplier = error_count / baseline
+    pct_above = ((error_count - baseline) / baseline) * 100
+    score = min(100, round(20 + z_score * 8))
+    if z_score >= 10:
+        plain = "Severe spike"
+    elif z_score >= 5:
+        plain = "Critical spike"
+    elif z_score >= 3:
+        plain = "Unusually high"
+    elif z_score >= 2:
+        plain = "Slightly elevated"
+    else:
+        plain = "Within normal range"
+    return {
+        "multiplier": multiplier,
+        "pct_above": pct_above,
+        "score": score,
+        "plain": plain,
+        "z": z_score,
+        "baseline": baseline,
+    }
+
 
 API_URL = os.getenv("API_URL", "http://localhost:8000")
-REFRESH_INTERVAL = 10  # seconds
 
-st.set_page_config(
-    page_title="Observability Watchdog",
-    page_icon="🔭",
-    layout="wide",
+st.set_page_config(page_title="Watchdog", page_icon="🔭", layout="centered")
+st_autorefresh(interval=10_000, key="refresh")
+
+# Reduce Streamlit's default vertical padding between widget blocks
+st.markdown(
+    """
+<style>
+  section[data-testid="stMain"] .block-container {
+    padding-top: 1rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+  div[data-testid="stHtml"] { margin-bottom: -0.75rem !important; }
+  div[data-testid="stAltairChart"] { margin-top: -0.25rem !important; }
+</style>
+""",
+    unsafe_allow_html=True,
 )
 
 # ---------------------------------------------------------------------------
-# Data fetching helpers
+# Data
 # ---------------------------------------------------------------------------
 
 
@@ -30,232 +80,173 @@ def _get(path: str, params: dict | None = None) -> list | dict | None:
         return None
 
 
-def fetch_trends(hours: int = 1) -> pd.DataFrame:
+def fetch_anomalies(limit: int = 10) -> list[dict]:
+    return _get("/anomalies", {"limit": limit}) or []
+
+
+def fetch_trends(hours: int = 24) -> pd.DataFrame:
     data = _get("/health/trends", {"hours": hours})
     if not data:
-        return pd.DataFrame(
-            columns=[
-                "bucket",
-                "service_name",
-                "error_count",
-                "warn_count",
-                "info_count",
-            ]
-        )
+        return pd.DataFrame(columns=["bucket", "service_name", "error_count"])
     df = pd.DataFrame(data)
     df["bucket"] = pd.to_datetime(df["bucket"], utc=True)
     return df
 
 
-def fetch_anomalies(limit: int = 20) -> pd.DataFrame:
-    data = _get("/anomalies", {"limit": limit})
-    if not data:
-        return pd.DataFrame()
-    df = pd.DataFrame(data)
-    if not df.empty:
-        df["detected_at"] = pd.to_datetime(df["detected_at"], utc=True)
-    return df
+anomalies = fetch_anomalies()
+trends_df = fetch_trends()
 
-
-def fetch_webhook_events(limit: int = 20) -> pd.DataFrame:
-    data = _get("/webhook/events", {"limit": limit})
-    if not data:
-        return pd.DataFrame()
-    df = pd.DataFrame(data)
-    if not df.empty:
-        df["fired_at"] = pd.to_datetime(df["fired_at"], utc=True)
-    return df
-
+# Active incident = most recent CRITICAL or HIGH anomaly
+active = next(
+    (a for a in anomalies if a.get("severity") in ("CRITICAL", "HIGH")),
+    None,
+)
 
 # ---------------------------------------------------------------------------
 # Header
 # ---------------------------------------------------------------------------
 
-st.title("🔭 Observability Watchdog")
-st.caption(
-    f"Live data from `{API_URL}` · auto-refreshes every {REFRESH_INTERVAL}s · "
-    f"last updated {datetime.now(timezone.utc).strftime('%H:%M:%S UTC')}"
+clock = datetime.now(timezone.utc).strftime("%H:%M:%S")
+
+active_readings = (
+    metric_readings(
+        error_count=active["error_count"],
+        baseline_mean=(
+            active.get("baseline_mean")
+            if active.get("baseline_mean") is not None
+            else 0.4
+        ),
+        z_score=active["z_score"],
+    )
+    if active
+    else None
 )
 
-trends_df = fetch_trends(hours=6)
-anomalies_df = fetch_anomalies()
-webhook_df = fetch_webhook_events()
+st.html(header_html(clock=clock))
 
-# ---------------------------------------------------------------------------
-# KPI strip
-# ---------------------------------------------------------------------------
-
-total_errors = int(trends_df["error_count"].sum()) if not trends_df.empty else 0
-total_anomalies = len(anomalies_df)
-webhooks_fired = (
-    int(
-        webhook_df["response_status"]
-        .apply(lambda s: isinstance(s, (int, float)) and 200 <= s < 300)
-        .sum()
-    )
-    if not webhook_df.empty
-    else 0
-)
-
-k1, k2, k3, k4 = st.columns(4)
-k1.metric("Total Errors (6h)", total_errors)
-k2.metric("Anomalies Detected", total_anomalies)
-k3.metric("Webhooks Fired", webhooks_fired)
-k4.metric(
-    "Services Monitored",
-    trends_df["service_name"].nunique() if not trends_df.empty else 0,
-)
-
-st.divider()
-
-# ---------------------------------------------------------------------------
-# Chart 1 — Error Rate Over Time
-# ---------------------------------------------------------------------------
-
-st.subheader("Error Rate Over Time")
-if trends_df.empty:
-    st.info("No trend data yet — ingest some logs to see activity.")
-else:
-    pivot = trends_df.pivot_table(
-        index="bucket",
-        columns="service_name",
-        values="error_count",
-        aggfunc="sum",
-        fill_value=0,
-    )
-    st.line_chart(pivot)
-
-# ---------------------------------------------------------------------------
-# Chart 2 — Service Health Matrix
-# ---------------------------------------------------------------------------
-
-st.subheader("Service Health Matrix")
-if trends_df.empty:
-    st.info("No data yet.")
-else:
-    latest_bucket = trends_df["bucket"].max()
-    latest = trends_df[trends_df["bucket"] == latest_bucket].copy()
-    latest["total"] = (
-        latest["error_count"] + latest["warn_count"] + latest["info_count"]
-    )
-    latest["error_rate_%"] = (
-        (latest["error_count"] / latest["total"].replace(0, 1)) * 100
-    ).round(1)
-
-    def _status(rate: float) -> str:
-        if rate >= 20:
-            return "🔴 Critical"
-        if rate >= 10:
-            return "🟡 Degraded"
-        return "🟢 Healthy"
-
-    latest["status"] = latest["error_rate_%"].apply(_status)
-    st.dataframe(
-        latest[
-            [
-                "service_name",
-                "error_count",
-                "warn_count",
-                "info_count",
-                "error_rate_%",
-                "status",
-            ]
-        ]
-        .sort_values("error_rate_%", ascending=False)
-        .reset_index(drop=True),
-        width="stretch",
-        hide_index=True,
-    )
-
-st.divider()
-
-# ---------------------------------------------------------------------------
-# Chart 3 — Anomaly Events Timeline
-# ---------------------------------------------------------------------------
-
-col_left, col_right = st.columns([3, 2])
-
-with col_left:
-    st.subheader("Anomaly Events")
-    if anomalies_df.empty:
-        st.info("No anomalies detected yet.")
-    else:
-        SEVERITY_ICON = {"LOW": "🔵", "MEDIUM": "🟡", "HIGH": "🟠", "CRITICAL": "🔴"}
-        _required = [
-            "detected_at",
-            "service_name",
-            "severity",
-            "error_count",
-            "z_score",
-            "webhook_fired",
-        ]
-        _missing = [c for c in _required if c not in anomalies_df.columns]
-        if _missing:
-            st.warning(f"Unexpected API response — missing columns: {_missing}")
-        else:
-            display = anomalies_df[_required].copy()
-            display["severity"] = display["severity"].apply(
-                lambda s: f"{SEVERITY_ICON.get(s, '')} {s}"
-            )
-            display["webhook_fired"] = display["webhook_fired"].apply(
-                lambda v: "✅" if v else "❌"
-            )
-            display.columns = [
-                "Detected At",
-                "Service",
-                "Severity",
-                "Errors",
-                "Z-Score",
-                "Webhook",
-            ]
-            st.dataframe(
-                display.reset_index(drop=True),
-                width="stretch",
-                hide_index=True,
-            )
-
-# ---------------------------------------------------------------------------
-# Chart 4 — AI Narrative Panel
-# ---------------------------------------------------------------------------
-
-with col_right:
-    st.subheader("Latest AI Narrative")
-    if anomalies_df.empty or "ai_narrative" not in anomalies_df.columns:
-        st.info("No incidents narrated yet.")
-    else:
-        latest_anomaly = anomalies_df.sort_values("detected_at", ascending=False).iloc[
-            0
-        ]
-        severity = latest_anomaly.get("severity", "UNKNOWN")
-        icon = {"LOW": "🔵", "MEDIUM": "🟡", "HIGH": "🟠", "CRITICAL": "🔴"}.get(
-            severity, "⚪"
+# Tweaks popover — right-aligned, replaces sidebar
+_, col_tweaks = st.columns([5, 1])
+with col_tweaks:
+    with st.popover("⚙", use_container_width=True):
+        metric_style = st.selectbox(
+            "Anomaly metric",
+            options=["multiplier", "score", "plain", "zscore"],
+            format_func=lambda v: {
+                "multiplier": "× baseline",
+                "score": "0–100 score",
+                "plain": "Plain English",
+                "zscore": "Z-score",
+            }[v],
         )
-        st.markdown(f"**{icon} {severity}** — `{latest_anomaly['service_name']}`")
-        st.markdown(f"*{latest_anomaly['detected_at'].strftime('%Y-%m-%d %H:%M UTC')}*")
-        st.info(latest_anomaly.get("ai_narrative") or "No narrative available.")
-
-st.divider()
+        show_chart = st.toggle("Trend chart", value=True)
 
 # ---------------------------------------------------------------------------
-# Chart 5 — Webhook Fired Log
+# Hero + Investigate button
 # ---------------------------------------------------------------------------
 
-st.subheader("Webhook Fired Log")
-if webhook_df.empty:
-    st.info("No webhook events yet.")
-else:
-    display = webhook_df[["fired_at", "anomaly_id", "response_status"]].copy()
-    display["response_status"] = display["response_status"].apply(
-        lambda s: f"✅ {s}" if 200 <= s < 300 else f"❌ {s}"
+st.html(hero_html(active, metric_style, readings=active_readings))
+
+if active:
+    _, col_inv, _ = st.columns([3, 2, 3])
+    with col_inv:
+        if st.button("Investigate →", key="investigate", use_container_width=True):
+            st.session_state["pre_open_first"] = True
+        elif "pre_open_first" not in st.session_state:
+            st.session_state["pre_open_first"] = False
+
+# ---------------------------------------------------------------------------
+# Sparkline — 24h aggregated error-count trend with anomaly markers
+# (chart goes above Recent per design spec)
+# ---------------------------------------------------------------------------
+
+if show_chart and not trends_df.empty:
+    agg = (
+        trends_df.groupby("bucket", as_index=False)["error_count"]
+        .sum()
+        .sort_values("bucket")
     )
-    display.columns = ["Fired At", "Anomaly ID", "Response"]
-    st.dataframe(
-        display.reset_index(drop=True), use_container_width=True, hide_index=True
+    peak = int(agg["error_count"].max()) if not agg.empty else 0
+    focus_service = active["service_name"] if active else None
+    st.html(chart_header_html(focus_service, peak))
+
+    x_enc = alt.X(
+        "bucket:T",
+        axis=alt.Axis(
+            title=None,
+            labelAngle=0,
+            tickCount=2,
+            grid=False,
+            domain=False,
+            ticks=False,
+            labelColor="#6b7a94",
+            labelFont="JetBrains Mono, monospace",
+            labelFontSize=10,
+        ),
+    )
+    y_enc = alt.Y(
+        "error_count:Q",
+        axis=None,
+        scale=alt.Scale(zero=True),
     )
 
+    area = (
+        alt.Chart(agg)
+        .mark_area(color="#c8d0df", opacity=0.06, interpolate="linear")
+        .encode(x=x_enc, y=y_enc)
+    )
+    line = (
+        alt.Chart(agg)
+        .mark_line(color="#c8d0df", strokeWidth=1.6, interpolate="linear")
+        .encode(x=x_enc, y=y_enc)
+    )
+
+    anomaly_times = pd.DataFrame(
+        [
+            {
+                "bucket": pd.to_datetime(a["detected_at"], utc=True),
+                "error_count": a["error_count"],
+            }
+            for a in anomalies
+            if a.get("detected_at")
+        ]
+    )
+
+    layers = [area, line]
+    if not anomaly_times.empty:
+        dots = (
+            alt.Chart(anomaly_times)
+            .mark_point(color="#e05555", size=120, filled=True, opacity=0.9)
+            .encode(
+                x=alt.X("bucket:T"),
+                y=alt.Y("error_count:Q"),
+                tooltip=["bucket:T", "error_count:Q"],
+            )
+        )
+        layers.append(dots)
+
+    chart = (
+        alt.layer(*layers)
+        .properties(
+            height=170,
+            usermeta={"embedOptions": {"actions": False}},
+        )
+        .configure_view(strokeWidth=0, fill="transparent")
+        .configure_axis(grid=False)
+    )
+    st.altair_chart(chart, use_container_width=True)
+
 # ---------------------------------------------------------------------------
-# Auto-refresh — st.html injects JS without blocking server threads
+# Recent anomaly timeline
 # ---------------------------------------------------------------------------
 
-_ms = REFRESH_INTERVAL * 1000
-st.html(f"<script>setTimeout(() => window.location.reload(), {_ms});</script>")
+pre_open = st.session_state.get("pre_open_first", False)
+st.html(recent_rows_html(anomalies, metric_style, pre_open_first=pre_open))
+
+# Reset after one render so repeated refreshes don't keep it open
+st.session_state["pre_open_first"] = False
+
+# ---------------------------------------------------------------------------
+# Footer
+# ---------------------------------------------------------------------------
+
+st.html(footer_html(API_URL))

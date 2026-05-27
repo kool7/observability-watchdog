@@ -5,6 +5,8 @@ All tests are pure unit tests — no DB, no HTTP.
 
 from datetime import datetime, timedelta, timezone
 
+import pytest
+
 from app.models.anomaly import Severity
 from app.services.anomaly_detector import ZScoreDetector
 
@@ -201,3 +203,90 @@ class TestZScoreDetector:
         result = detector.analyze("svc", [cutoff_ts] * 5, _NOW)
         # No anomaly expected (not in current window), just no crash
         assert result is None
+
+
+# ---------------------------------------------------------------------------
+# metric_readings
+# ---------------------------------------------------------------------------
+
+
+class TestMetricReadings:
+    def test_returns_all_keys(self):
+        from app.services.anomaly_detector import metric_readings
+
+        r = metric_readings(error_count=30, baseline_mean=0.4, z_score=30.0)
+        assert set(r.keys()) == {
+            "multiplier",
+            "pct_above",
+            "score",
+            "plain",
+            "z",
+            "baseline",
+        }
+
+    def test_multiplier_divides_by_floored_baseline(self):
+        from app.services.anomaly_detector import metric_readings
+
+        r = metric_readings(error_count=30, baseline_mean=0.1, z_score=30.0)
+        # baseline_mean < 0.4 so floor kicks in: 30 / 0.4 = 75
+        assert r["multiplier"] == pytest.approx(75.0)
+
+    def test_multiplier_uses_actual_baseline_when_above_floor(self):
+        from app.services.anomaly_detector import metric_readings
+
+        r = metric_readings(error_count=10, baseline_mean=2.0, z_score=5.0)
+        assert r["multiplier"] == pytest.approx(5.0)
+
+    def test_score_capped_at_100(self):
+        from app.services.anomaly_detector import metric_readings
+
+        r = metric_readings(error_count=30, baseline_mean=0.4, z_score=100.0)
+        assert r["score"] == 100
+
+    def test_score_minimum_at_z2(self):
+        from app.services.anomaly_detector import metric_readings
+
+        r = metric_readings(error_count=5, baseline_mean=1.0, z_score=2.0)
+        assert r["score"] == min(100, round(20 + 2.0 * 8))
+
+    def test_plain_severe_spike(self):
+        from app.services.anomaly_detector import metric_readings
+
+        r = metric_readings(error_count=30, baseline_mean=0.4, z_score=10.0)
+        assert r["plain"] == "Severe spike"
+
+    def test_plain_critical_spike(self):
+        from app.services.anomaly_detector import metric_readings
+
+        r = metric_readings(error_count=20, baseline_mean=0.4, z_score=6.0)
+        assert r["plain"] == "Critical spike"
+
+    def test_plain_unusually_high(self):
+        from app.services.anomaly_detector import metric_readings
+
+        r = metric_readings(error_count=5, baseline_mean=1.0, z_score=3.5)
+        assert r["plain"] == "Unusually high"
+
+    def test_plain_slightly_elevated(self):
+        from app.services.anomaly_detector import metric_readings
+
+        r = metric_readings(error_count=3, baseline_mean=1.0, z_score=2.5)
+        assert r["plain"] == "Slightly elevated"
+
+    def test_plain_within_normal(self):
+        from app.services.anomaly_detector import metric_readings
+
+        r = metric_readings(error_count=2, baseline_mean=1.0, z_score=1.5)
+        assert r["plain"] == "Within normal range"
+
+    def test_z_passthrough(self):
+        from app.services.anomaly_detector import metric_readings
+
+        r = metric_readings(error_count=10, baseline_mean=1.0, z_score=4.7)
+        assert r["z"] == pytest.approx(4.7)
+
+    def test_baseline_floor_stored(self):
+        from app.services.anomaly_detector import metric_readings
+
+        r = metric_readings(error_count=10, baseline_mean=0.1, z_score=5.0)
+        assert r["baseline"] == pytest.approx(0.4)
