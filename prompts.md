@@ -484,6 +484,20 @@ _[From here on: every prompt logged exactly as typed — no corrections, no rewr
 
 ---
 
+## Turn 59 — Chart: Fix Squiggly Line + Altair Toolbar Blocking Last Dot
+
+**Timestamp:** 2026-05-27
+
+"why line is squiggly, not able to click on last observation [Image #2] check this image [Image #3]"
+
+[Image #2: chart shows squiggly/wavy artifact at bottom-left baseline — monotone cubic spline overshoots near sparse zero-value points. Image #3: hovering reveals Altair toolbar (table icon, fullscreen, "..." with "Click to view") overlapping the right-most anomaly red dot, making it inaccessible.]
+
+Fixes:
+1. interpolate "monotone" → "linear" (no overshoot; 288 buckets look smooth with linear)
+2. Add usermeta={"embedOptions": {"actions": False}} to hide Altair toolbar on hover
+
+---
+
 ## Turn 58 — Chart: Taller Height + Smooth Line
 
 **Timestamp:** 2026-05-27

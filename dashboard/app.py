@@ -191,12 +191,12 @@ if show_chart and not trends_df.empty:
 
     area = (
         alt.Chart(agg)
-        .mark_area(color="#c8d0df", opacity=0.06, interpolate="monotone")
+        .mark_area(color="#c8d0df", opacity=0.06, interpolate="linear")
         .encode(x=x_enc, y=y_enc)
     )
     line = (
         alt.Chart(agg)
-        .mark_line(color="#c8d0df", strokeWidth=1.6, interpolate="monotone")
+        .mark_line(color="#c8d0df", strokeWidth=1.6, interpolate="linear")
         .encode(x=x_enc, y=y_enc)
     )
 
@@ -226,7 +226,10 @@ if show_chart and not trends_df.empty:
 
     chart = (
         alt.layer(*layers)
-        .properties(height=170)
+        .properties(
+            height=170,
+            usermeta={"embedOptions": {"actions": False}},
+        )
         .configure_view(strokeWidth=0, fill="transparent")
         .configure_axis(grid=False)
     )
