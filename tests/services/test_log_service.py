@@ -150,7 +150,8 @@ class TestListLogEntries:
         db = _make_db()
         self._mock_result(db, [])
         await list_log_entries(db, limit=9999)
-        db.execute.assert_awaited_once()
+        stmt = db.execute.call_args[0][0]
+        assert "1000" in str(stmt.compile(compile_kwargs={"literal_binds": True}))
 
 
 class TestGetLogEntry:

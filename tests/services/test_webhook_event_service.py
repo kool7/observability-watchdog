@@ -44,4 +44,5 @@ class TestListWebhookEvents:
         db.execute.return_value = mock_result
 
         await list_webhook_events(db, limit=5)
-        db.execute.assert_awaited_once()
+        stmt = db.execute.call_args[0][0]
+        assert "5" in str(stmt.compile(compile_kwargs={"literal_binds": True}))

@@ -47,7 +47,8 @@ class TestListAnomalies:
         db.execute.return_value = mock_result
 
         await list_anomalies(db, limit=10)
-        db.execute.assert_awaited_once()
+        stmt = db.execute.call_args[0][0]
+        assert "10" in str(stmt.compile(compile_kwargs={"literal_binds": True}))
 
 
 class TestGetAnomaly:
